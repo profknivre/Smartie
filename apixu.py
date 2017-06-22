@@ -23,7 +23,9 @@ class timeout:
 
 
 def _getdata_raw():
-#    response = requests.get('http://api.apixu.com/v1/current.json?key=%s&q=Wroclaw'%('keystring'))
+    # response = requests.get('http://api.apixu.com/v1/current.json?key=%s&q=Wroclaw'%('keystring'))
+    # in my network 5.8.0.0/16 is not routed outside
+    # this is a caching proxy running very similar code but it has api key embedded
     response = requests.get('http://5.8.0.1/cgi-bin/zonk.py')
     return response.json()
 

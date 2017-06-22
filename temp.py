@@ -1,82 +1,118 @@
 #!/usr/bin/python
 
 import os
-import statsd
+import shelve
 import subprocess
-import Adafruit_DHT
-
 from collections import deque
-import pickle
-from apixu import getdata
 
-fname = '/tmp/histogram'
+import Adafruit_DHT
+import statsd
+from apixu import getdata
 
 c = statsd.StatsClient('5.8.1.1', 8125)
 
-def linreg(X, Y):
-    """
-    return a,b in solution to y = ax + b such that root mean square distance between trend line and original points is minimized
-    """
-    N = len(X)
-    Sx = Sy = Sxx = Syy = Sxy = 0.0
-    for x, y in zip(X, Y):
-        Sx = Sx + x
-        Sy = Sy + y
-        Sxx = Sxx + x*x
-        Syy = Syy + y*y
-        Sxy = Sxy + x*y
-    det = Sxx * N - Sx * Sx
-    return (Sxy * N - Sy * Sx)/det, (Sxx * Sy - Sx * Sxy)/det
+
+def get_slope(current_val, update=True):
+
+    def linreg(x, y):
+        """
+        return a,b in solution to y = ax + b such that root mean square distance between trend line
+        and original points is minimized
+        """
+        n = len(x)
+        sx = sy = sxx = syy = sxy = 0.0
+        for x_, y_ in zip(x, y):
+            sx = sx + x_
+            sy = sy + y_
+            sxx = sxx + x_ * x_
+            syy = syy + y_ * y_
+            sxy = sxy + x_ * y_
+        det = sxx * n - sx * sx
+        try:
+            return (sxy * n - sy * sx) / det, (sxx * sy - sx * sxy) / det
+        except ZeroDivisionError:
+            return 0
+
+    with shelve.open('/tmp/shelve') as db:
+        if 'hum_hist' not in db:
+            dq = deque(maxlen=10)
+            if current_val == 0:
+                dq.append(-1)
+        else:
+            dq = db['hum_hist']
+
+        if update:
+            dq.append(current_val)
+            db['hum_hist'] = dq
+
+        a, b = linreg(range(len(dq)), dq)
+
+        return a
 
 
-with c.timer('malina0.measurments_time'):
-    z=0.0
-    
-    try:
-        with open(fname,'rb') as f:
-            humtab = pickle.loads(f.read())
-
-    except:
-        humtab = deque(maxlen=10)
+def readds18():
+    with open('/sys/bus/w1/devices/28-0115915119ff/w1_slave', 'r') as f:
+        f.readline()
+        b = f.readline()
+        z = float(b.strip().split('=')[1]) / 1000.0
+        return z
 
 
+def readcroetemp():
+    return float(
+        subprocess.check_output(['/opt/vc/bin/vcgencmd', 'measure_temp']).decode('utf8').strip()[5:].replace("'C", ''))
+
+
+def fancontrol(humidity, humi_slope):
+    if not os.path.exists('/tmp/bypass'):
+        if not os.path.exists('/sys/class/gpio/gpio13/value'):
+            with open('/sys/class/gpio/export', 'w') as file:
+                file.write('13\n')
+
+            with open('/sys/class/gpio/gpio13/direction', 'w') as file:
+                file.write('out\n')
+
+            with open('/sys/class/gpio/gpio13/value', 'w') as file:
+                file.write('0\n')
+
+        if humidity >= 80:
+            with open('/sys/class/gpio/gpio13/value', 'w') as file:
+                file.write('1\n')
+
+        # if humidity <=65:
+        if humidity < 75 and abs(humi_slope) < 0.25:
+            with open('/sys/class/gpio/gpio13/value', 'w') as file:
+                file.write('0\n')
+
+        if not os.path.exists('/sys/class/gpio/gpio13/value'):
+            raise Exception('no gpio')
+
+    with open('/sys/class/gpio/gpio13/value') as file:
+        val = int(file.read().strip())
+        c.gauge('mieszkanie.lazienka.wentylator', val)
+
+
+with c.timer('malina0.measurments_time.total'):
     with c.timer('malina0.measurments_time.ds18read'):
-        with open('/sys/bus/w1/devices/28-0115915119ff/w1_slave','r') as f:
-            a = f.readline()
-            b = f.readline()
-            z=float(b.strip().split('=')[1])/1000.0
-    
-    c.gauge('mieszkanie.temp1', z)
-    
-    tmp=0.0
+        ds18temp = readds18()
+        c.gauge('mieszkanie.temp1', ds18temp)
+
     with c.timer('malina0.measurments_time.coretemp'):
-        tmp = float(subprocess.check_output(['/opt/vc/bin/vcgencmd','measure_temp']).decode('utf8').strip()[5:].replace("'C",''))
-    
-    c.gauge('malina0.core_temp', tmp)
-    
-    sensor = Adafruit_DHT.DHT22
-    pin = 19
-   
-    humidity =0
-    temperature =0
+        tmp = readcroetemp()
+        c.gauge('malina0.core_temp', tmp)
 
     with c.timer('malina0.measurments_time.dhtread'):
-        humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
-    
-    c.gauge('mieszkanie.lazienka.temp',temperature)
-    c.gauge('mieszkanie.lazienka.humidity',humidity)
+        humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, 19)
 
-    humtab.append(humidity)
+    c.gauge('mieszkanie.lazienka.temp', temperature)
+    c.gauge('mieszkanie.lazienka.humidity', humidity)
 
-    humlst = list(humtab)
-    a,b = linreg(range(len(humlst)),humlst)
+    humi_slope = get_slope(humidity)
 
-    if 1 < 0:  c.gauge('mieszkanie.lazienka.humidity_slope',0.0)
-    c.gauge('mieszkanie.lazienka.humidity_slope',a)
+    c.gauge('mieszkanie.lazienka.humidity_slope', humi_slope)
 
-    print("slope {} {}".format(a,humlst))
-    
-    print("temp1: {:2.2f} temp lazienka: {:2.2f} humi lazienka: {:2.2f}".format(z,temperature,humidity))
+    # TODO pretty print this shite
+    print("temp1: {:2.2f} temp lazienka: {:2.2f} humi lazienka: {:2.2f}".format(ds18temp, temperature, humidity))
 
     with c.timer('malina0.measurments_time.apixu'):
         apixu = getdata()
@@ -86,38 +122,4 @@ with c.timer('malina0.measurments_time'):
     c.gauge('mieszkanie.temp_zew', temp)
     c.gauge('mieszkanie.humi_zew', ahum)
 
-    
-    if not os.path.exists('/tmp/bypass'):
-        if not os.path.exists('/sys/class/gpio/gpio13/value'):
-            with open('/sys/class/gpio/export','w') as file:
-                file.write('13\n')
-    
-            with open('/sys/class/gpio/gpio13/direction','w') as file:
-                file.write('out\n')
-    
-            with open('/sys/class/gpio/gpio13/value','w') as file:
-                file.write('0\n')
-    
-        if humidity >=80:
-            with open('/sys/class/gpio/gpio13/value','w') as file:
-                file.write('1\n')
-       
-        #if humidity <=65:
-        if humidity < 75 and abs(a) < 0.25:
-            with open('/sys/class/gpio/gpio13/value','w') as file:
-                file.write('0\n')
-    
-    
-        
-        if not os.path.exists('/sys/class/gpio/gpio13/value'):
-            raise Exception('no gpio')
-    
-    
-        with open('/sys/class/gpio/gpio13/value') as file:
-            val = int(file.read().strip())
-            c.gauge('mieszkanie.lazienka.wentylator',val)
-
-    with open(fname,'wb') as f:
-        f.write(pickle.dumps(humtab))
-
-
+    fancontrol(humidity, humi_slope)
