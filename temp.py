@@ -5,6 +5,10 @@ import shelve
 import subprocess
 from collections import deque
 
+from util import linreg, TimerMock
+
+from gpio import SysfsGPIO
+
 try:
     import Adafruit_DHT
     import statsd
@@ -13,43 +17,18 @@ except ModuleNotFoundError:
 
 from apixu import getdata
 
-
 # TODO make this proper
 # ---decorator hack
 try:
     # in my network 5.8.0.0/16 is not routed outside!!!
     stats = statsd.StatsClient('5.8.1.1', 8125)
 except NameError:
-    class TimerMock:
-        @staticmethod
-        def timer(args):
-            def a(arg):
-                pass
-            return a
     stats = TimerMock
+
+
 # ---hack
 
 # TODO: add some testing!!
-
-
-def linreg(x, y):
-    """
-    return a,b in solution to y = ax + b such that root mean square distance between trend line
-    and original points is minimized
-    """
-    n = len(x)
-    sx = sy = sxx = syy = sxy = 0.0
-    for x_, y_ in zip(x, y):
-        sx = sx + x_
-        sy = sy + y_
-        sxx = sxx + x_ * x_
-        syy = syy + y_ * y_
-        sxy = sxy + x_ * y_
-    det = sxx * n - sx * sx
-    try:
-        return (sxy * n - sy * sx) / det, (sxx * sy - sx * sxy) / det
-    except ZeroDivisionError:
-        return 0
 
 
 def get_slope(current_val, update=True):
@@ -100,44 +79,29 @@ def readapixu():
     return temperature, humidity
 
 
-def fancontrol(humidity, slope):
-    pin =13
-    prefix = '/sys/class/gpio/'
-    gpio = 'gpio{}'.format(pin)
-    value_path = '{}{}/value'.format(prefix,gpio)
-    direction_path = '{}{}/direction'.format(prefix,gpio)
+def fancontrol(humidity):
+    slope = get_slope(humidity)
+    stats.gauge('mieszkanie.lazienka.humidity_slope', slope)
 
     if not os.path.exists('/tmp/bypass'):
-        if not os.path.exists(value_path):
-            with open('/sys/class/gpio/export', 'w') as file:
-                file.write('13\n')
+        gp = SysfsGPIO(pinnumber=13)
+        gp.setDDR(gp.DDR_OUTPUT)
 
-            with open(direction_path, 'w') as file:
-                file.write('out\n')
+        if humidity >= 80 and slope >= 1:
+            gp.setOutput(1)
 
-            with open(value_path, 'w') as file:
-                file.write('0\n')
+        if humidity < 80 and slope > -0.25:
+            gp.setOutput(0)
 
-        if humidity >= 80:
-            with open(value_path, 'w') as file:
-                file.write('1\n')
+        if humidity < 50:
+            gp.setOutput(0)
 
-        # if humidity <=65:
-        if humidity < 75 and abs(slope) < 0.25:
-            with open(value_path, 'w') as file:
-                file.write('0\n')
-
-        if not os.path.exists(value_path):
-            raise Exception('no gpio')
-
-    with open(value_path) as file:
-        val = int(file.read().strip())
+        val = gp.getInput()
         stats.gauge('mieszkanie.lazienka.wentylator', val)
 
 
 def main():
     with stats.timer('malina0.measurments_time.total'):
-
         ds18temp = readds18()
         stats.gauge('mieszkanie.temp1', ds18temp)
 
@@ -145,23 +109,17 @@ def main():
         stats.gauge('malina0.core_temp', coretemp)
 
         humidity, temperature = readdht()
-
         stats.gauge('mieszkanie.lazienka.temp', temperature)
         stats.gauge('mieszkanie.lazienka.humidity', humidity)
 
-        slope = get_slope(humidity)
-
-        stats.gauge('mieszkanie.lazienka.humidity_slope', slope)
-
-        # TODO pretty print this shite
-        print("temp1: {:2.2f} temp lazienka: {:2.2f} humi lazienka: {:2.2f}".format(ds18temp, temperature, humidity))
-
         apixtemp, apixhum = readapixu()
-
         stats.gauge('mieszkanie.temp_zew', apixtemp)
         stats.gauge('mieszkanie.humi_zew', apixhum)
 
-        fancontrol(humidity, slope)
+        fancontrol(humidity)
+
+        # TODO pretty print this shite
+        print("temp1: {:2.2f} temp lazienka: {:2.2f} humi lazienka: {:2.2f}".format(ds18temp, temperature, humidity))
 
 
 if __name__ == '__main__':

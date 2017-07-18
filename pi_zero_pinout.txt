@@ -1,0 +1,20 @@
+GPIO16 - input over pc817
+GPIO4  - one wire with pullup
+GPIO13 - output over pc817
+GPIO19 - input DHT with pullup
+
+1	NC
+2	IN-
+3	IN+
+4	OUT-
+5	OUT+
+6	GND(int)
+7	+5V(int)
+8	NC
+9	DHT
+10	+3.3V(int)
+11	1w
+12	GND(int)
+13	Vin+
+14 	GNDin-
+

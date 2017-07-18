@@ -1,4 +1,4 @@
-from temp import linreg
+from util import linreg
 from collections import deque
 import shelve
 
