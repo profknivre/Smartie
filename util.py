@@ -24,7 +24,7 @@ def linreg(x, y):
     try:
         return (sxy * n - sy * sx) / det, (sxx * sy - sx * sxy) / det
     except ZeroDivisionError:
-        return 0
+        return 0, 0
 
 
 class timeout:

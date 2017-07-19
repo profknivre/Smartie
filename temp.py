@@ -5,9 +5,8 @@ import shelve
 import subprocess
 from collections import deque
 
-from util import linreg, TimerMock
-
 from gpio import SysfsGPIO
+from util import linreg, TimerMock
 
 try:
     import Adafruit_DHT
@@ -26,23 +25,21 @@ except NameError:
     stats = TimerMock
 
 
-# ---hack
+# ---/hack
 
 # TODO: add some testing!!
 
 
 def get_slope(current_val, update=True):
     with shelve.open('/tmp/shelve') as db:
-        if 'hum_hist' not in db:
-            dq = deque(maxlen=10)
-            if current_val == 0:
-                dq.append(-1)
-        else:
-            dq = db['hum_hist']
+        dq = db.get('hum_hist', deque(maxlen=10))
+        dq3 = db.get('hum_hist3', deque(maxlen=3))
 
         if update:
             dq.append(current_val)
             db['hum_hist'] = dq
+            dq3.append(current_val)
+            db['hum_hist3'] = dq3
 
         a, b = linreg(range(len(dq)), dq)
 
@@ -85,7 +82,8 @@ def fancontrol(humidity):
 
     if not os.path.exists('/tmp/bypass'):
         gp = SysfsGPIO(pinnumber=13)
-        gp.setDDR(gp.DDR_OUTPUT)
+        if gp.getDDR() == gp.DDR_INPUT:
+            gp.setDDR(gp.DDR_OUTPUT)
 
         if humidity >= 80 and slope >= 1:
             gp.setOutput(1)
