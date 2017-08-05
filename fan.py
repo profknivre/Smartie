@@ -1,6 +1,8 @@
+import shelve
 from time import time
 
 from gpio import GPIOBase
+from gpio import SysfsGPIO
 
 
 class Fan:
@@ -34,3 +36,32 @@ class Fan:
 
     def on_time_last(self):
         return self.db.get('on_time_last', 0)
+
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description='fiddle with FAN')
+    parser.add_argument('val', metavar='val', type=int, nargs='?', help='value', default=None, choices=(0, 1))
+    args = parser.parse_args()
+
+    gp = SysfsGPIO(pinnumber=13)
+    if gp.getDDR() == gp.DDR_INPUT:
+        gp.setDDR(gp.DDR_OUTPUT)
+
+    database = shelve.open('/tmp/fan_data')
+
+    fan = Fan(gp, database)
+
+    if (args.val == None):  # read
+        print(fan.is_on())
+
+    if (args.val == 1):  # start
+        fan.on()
+
+    if (args.val == 0):  # stop
+        fan.off()
+
+
+if __name__ == '__main__':
+    main()

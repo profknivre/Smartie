@@ -3,7 +3,7 @@ import subprocess
 from collections import deque
 from json import dump, load
 
-from util import linreg, TimerMock
+from util import linreg
 
 try:
     import Adafruit_DHT
@@ -13,16 +13,16 @@ except ModuleNotFoundError:
 
 from apixu import getdata
 
-# TODO make this proper
-# ---decorator hack
-try:
-    # in my network 5.8.0.0/16 is not routed outside!!!
-    stats = statsd.StatsClient('5.8.1.1', 8125)
-except NameError:
-    stats = TimerMock
 
-
+#
+# # ---decorator hack
+# try:
+#     # in my network 5.8.0.0/16 is not routed outside!!!
+#     stats = statsd.StatsClient('5.8.1.1', 8125)
+# except NameError:
+#     stats = TimerMock
 # ---/hack
+#
 
 class MeasurmentsInternals:
     @staticmethod

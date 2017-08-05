@@ -96,7 +96,7 @@ class SysfsGPIO(GPIOBase):
             return val
 
 
-def Main():
+def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='fiddle with gpio')
@@ -121,4 +121,4 @@ def Main():
 
 
 if __name__ == '__main__':
-    Main()
+    main()

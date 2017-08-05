@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from time import localtime
 
 from fan import Fan
 from measurements import Measurements
@@ -21,13 +21,31 @@ class FanCondition:
         # print(f'{clasname}(B) -> {retval}')
         return retval
 
-    @abstractmethod
     def handle(self):
         pass
 
-    @abstractmethod
     def take_action(self):
         pass
+
+    @staticmethod
+    def min_on_time():
+        current_time = localtime()
+
+        if current_time.tm_wday in (5, 6):  # weekend
+            if current_time.tm_hour in (list(range(0, 6)) + list(range(23, 24))):
+                return 5 * 60
+
+        return 15 * 60
+
+    @staticmethod
+    def max_on_time():
+        current_time = localtime()
+
+        if current_time.tm_wday in (5, 6):  # weekend
+            if current_time.tm_hour in (list(range(0, 6)) + list(range(23, 24))):
+                return 15 * 60
+
+        return 60 * 60
 
 
 class FanStopCond(FanCondition):
@@ -52,7 +70,7 @@ class HighHumidityAndHighSlopeCondtion(FanStartCond):
 class LowHumiditySmallSlopeCondition(FanStopCond):
     def handle(self):
         humidity, slope = self.measurements.humidity, self.measurements.slope
-        if humidity < 80 and slope > -0.25:  # and fan.on_time() > (15*60):
+        if humidity < 80 and slope > -0.25 and self.fan.on_time() > self.min_on_time():
             self.take_action()
             return True
         return False
@@ -60,11 +78,7 @@ class LowHumiditySmallSlopeCondition(FanStopCond):
 
 class LongRunningTimeCondition(FanStopCond):
     def handle(self):
-        if self.fan.on_time() > self.maxontime():
+        if self.fan.on_time() > self.max_on_time():
             self.take_action()
             return True
         return False
-
-    def maxontime(self):
-        # TODO: make it time dependant
-        return 15 * 60

@@ -25,7 +25,7 @@ class TestFanController(TestCase):
         super().setUp()
 
         self.fan = MagicMock()
-        self.fan.on_time = MagicMock(return_value=33)
+        self.fan.on_time = MagicMock(return_value=330)
         self.fan.on = MagicMock()
         self.fan.off = MagicMock()
         self.meas = Measurements()

@@ -23,6 +23,7 @@ class TestLowHumiditySmallSlope(TestCase):
     def test_handle_stop(self):
         self.meas.humidity = 58
         self.meas.slope = 0.51
+        self.fan.on_time = MagicMock(return_value=600)
 
         self.cond()
         self.fan.off.assert_called()

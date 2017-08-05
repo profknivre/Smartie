@@ -1,3 +1,5 @@
+import os
+
 from conditions import HighHumidityAndHighSlopeCondtion, LowHumiditySmallSlopeCondition, LongRunningTimeCondition
 from fan import Fan
 from measurements import Measurements
@@ -27,9 +29,8 @@ class FanController:
     #     return a
 
     def do_stuff(self):
-
-        if any(self.startconds):
-            print('Fan started')
-
-        if any(self.stopconds):
-            print('Fan stopped')
+        if not os.path.exists('/tmp/bypass'):
+            if any(self.startconds):
+                print('Fan started')
+            if any(self.stopconds):
+                print('Fan stopped')
