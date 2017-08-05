@@ -40,7 +40,7 @@ class MeasurmentsInternals:
     def read_croetemp():
         try:
             return float(
-                subprocess.check_output(['/opt/vc/bin/vcgencmd', 'measure_temp']) \
+                subprocess.check_output(['/opt/vc/bin/vcgencmd', 'measure_temp'])
                     .decode('utf8').strip()[5:].replace("'C", ''))
         except:
             return 0
@@ -61,11 +61,11 @@ class MeasurmentsInternals:
 
         if 'current' not in apixu:
             print('apixu broken')
-            return (-1, -1)
+            return -1, -1
         else:
             if 'temp_c' not in apixu['current'] or 'humidity' not in apixu['current']:
                 print('apixu broken2')
-                return (-1, -1)
+                return -1, -1
 
         temperature = apixu['current']['temp_c']
         humidity = apixu['current']['humidity']
@@ -114,21 +114,21 @@ class Measurements(MeasurmentsInternals):
 
 class TimedMeasurements(Measurements):
     @staticmethod
-    @stats.timer('malina0.measurments_time.apixu')
     def read_apixu():
-        return super().read_apixu()
+        with stats.timer('malina0.measurments_time.apixu'):
+            return super().read_apixu()
 
     @staticmethod
-    @stats.timer('malina0.measurments_time.ds18read')
     def read_ds18():
-        return super().read_ds18()
+        with stats.timer('malina0.measurments_time.ds18read'):
+            return super().read_ds18()
 
     @staticmethod
-    @stats.timer('malina0.measurments_time.dhtread')
     def read_dht():
-        return super().read_dht()
+        with stats.timer('malina0.measurments_time.dhtread'):
+            return super().read_dht()
 
     @staticmethod
-    @stats.timer('malina0.measurments_time.coretemp')
     def read_croetemp():
-        return super().read_croetemp()
+        with stats.timer('malina0.measurments_time.coretemp'):
+            return super().read_croetemp()
