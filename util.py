@@ -1,7 +1,7 @@
 import signal
 
 
-def getslope(data):
+def get_slope(data):
     # y = a*x+b
     a, b = linreg(range(len(data)), data)
     return a

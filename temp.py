@@ -4,7 +4,9 @@ import os
 import shelve
 import subprocess
 from collections import deque
+from time import ctime
 
+from fan import Fan
 from gpio import SysfsGPIO
 from util import linreg, TimerMock
 
@@ -70,13 +72,29 @@ def readdht():
 @stats.timer('malina0.measurments_time.apixu')
 def readapixu():
     apixu = getdata()
+
+    if 'current' not in apixu:
+        print('apixu broken')
+        return (-1, -1)
+    else:
+        if 'temp_c' not in apixu or 'humidity' not in apixu:
+            print('apixu broken')
+            return (-1, -1)
+
     temperature = apixu['current']['temp_c']
     humidity = apixu['current']['humidity']
 
     return temperature, humidity
 
 
-def fancontrol(humidity):
+def fan_control(humidity):
+    def log_fan_time(fan):
+        with open('/tmp/fanlog', 'at') as f:
+            ontime = fan.on_time_last()
+            str = '{}:Fan on time: {}\n'.format(ctime(), ontime)
+            f.write(str)
+
+
     slope = get_slope(humidity)
     stats.gauge('mieszkanie.lazienka.humidity_slope', slope)
 
@@ -85,17 +103,22 @@ def fancontrol(humidity):
         if gp.getDDR() == gp.DDR_INPUT:
             gp.setDDR(gp.DDR_OUTPUT)
 
-        if humidity >= 80 and slope >= 1:
-            gp.setOutput(1)
+        with shelve.open('/tmp/fan_data') as db:
+            fan = Fan(gp, db)
 
-        if humidity < 80 and slope > -0.25:
-            gp.setOutput(0)
+            if humidity >= 80 and slope >= 1:
+                fan.on()
 
-        if humidity < 50:
-            gp.setOutput(0)
+            if humidity < 80 and slope > -0.25:  # and fan.on_time() > (15*60):
+                fan.off()
+                log_fan_time(fan)
 
-        val = gp.getInput()
-        stats.gauge('mieszkanie.lazienka.wentylator', val)
+            if humidity < 50 or fan.on_time() > 3600:
+                fan.off()
+                log_fan_time(fan)
+
+            val = fan.is_on()
+            stats.gauge('mieszkanie.lazienka.wentylator', val)
 
 
 def main():
@@ -114,7 +137,7 @@ def main():
         stats.gauge('mieszkanie.temp_zew', apixtemp)
         stats.gauge('mieszkanie.humi_zew', apixhum)
 
-        fancontrol(humidity)
+        fan_control(humidity)
 
         # TODO pretty print this shite
         print("temp1: {:2.2f} temp lazienka: {:2.2f} humi lazienka: {:2.2f}".format(ds18temp, temperature, humidity))
