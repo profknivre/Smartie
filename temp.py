@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import shelve
 from time import ctime
@@ -6,7 +6,7 @@ from time import ctime
 from fan import Fan
 from fanctrl import FanController
 from gpio import SysfsGPIO
-from measurements import Measurements
+from measurements import TimedMeasurements
 from util import TimerMock
 
 try:
@@ -37,11 +37,8 @@ class ActualFan(Fan):
 
     def off(self):
         with open('/tmp/fanlog.txt', 'at') as f:
-            f.write(f'{ctime()} fann was ruuning for: {self.on_time()}\n')
-        super().off()
-
-    def on(self):
-        super().on()
+            f.write('{} fann was ruuning for: {}\n'.format(ctime(), self.on_time()))
+        Fan.off(self)
 
     def __del__(self):
         self.database_.close()
@@ -49,7 +46,7 @@ class ActualFan(Fan):
 
 def main():
     with stats.timer('malina0.measurments_time.total'):
-        m = Measurements()
+        m = TimedMeasurements()
 
         stats.gauge('mieszkanie.temp1', m.ds18temp)
         stats.gauge('malina0.core_temp', m.coretemp)
@@ -64,6 +61,11 @@ def main():
         fc.do_stuff()
 
         val = fan.is_on()
+        if val == True:
+            val = 1
+        else:
+            val = 0
+
         stats.gauge('mieszkanie.lazienka.wentylator', val)
 
         # TODO pretty print this shite

@@ -54,7 +54,9 @@ def main():
     fan = Fan(gp, database)
 
     if (args.val == None):  # read
-        print(fan.is_on())
+        ison = fan.is_on()
+        if ison:
+            print('Fan on for: {:d}'.format(int(fan.on_time())))
 
     if (args.val == 1):  # start
         fan.on()

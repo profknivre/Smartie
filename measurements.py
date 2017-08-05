@@ -3,7 +3,7 @@ import subprocess
 from collections import deque
 from json import dump, load
 
-from util import linreg
+from util import linreg, TimerMock
 
 try:
     import Adafruit_DHT
@@ -13,20 +13,19 @@ except ModuleNotFoundError:
 
 from apixu import getdata
 
+# ---decorator hack
+try:
+    # in my network 5.8.0.0/16 is not routed outside!!!
+    stats = statsd.StatsClient('5.8.1.1', 8125)
+except NameError:
+    stats = TimerMock
 
-#
-# # ---decorator hack
-# try:
-#     # in my network 5.8.0.0/16 is not routed outside!!!
-#     stats = statsd.StatsClient('5.8.1.1', 8125)
-# except NameError:
-#     stats = TimerMock
+
 # ---/hack
-#
+
 
 class MeasurmentsInternals:
     @staticmethod
-    # @stats.timer('malina0.measurments_time.ds18read')
     def read_ds18():
         try:
             with open('/sys/bus/w1/devices/28-0115915119ff/w1_slave', 'r') as f:
@@ -38,7 +37,6 @@ class MeasurmentsInternals:
             return 0
 
     @staticmethod
-    # @stats.timer('malina0.measurments_time.coretemp')
     def read_croetemp():
         try:
             return float(
@@ -48,7 +46,6 @@ class MeasurmentsInternals:
             return 0
 
     @staticmethod
-    # @stats.timer('malina0.measurments_time.dhtread')
     def read_dht():
         humidity, temperature = 0, 0
         try:
@@ -59,7 +56,6 @@ class MeasurmentsInternals:
         return humidity, temperature
 
     @staticmethod
-    # @stats.timer('malina0.measurments_time.apixu')
     def read_apixu():
         apixu = getdata()
 
@@ -114,3 +110,25 @@ class Measurements(MeasurmentsInternals):
         dct = vars(self)
         with open(fname, 'w') as f:
             dump(dct, f)
+
+
+class TimedMeasurements(Measurements):
+    @staticmethod
+    @stats.timer('malina0.measurments_time.apixu')
+    def read_apixu():
+        return super().read_apixu()
+
+    @staticmethod
+    @stats.timer('malina0.measurments_time.ds18read')
+    def read_ds18():
+        return super().read_ds18()
+
+    @staticmethod
+    @stats.timer('malina0.measurments_time.dhtread')
+    def read_dht():
+        return super().read_dht()
+
+    @staticmethod
+    @stats.timer('malina0.measurments_time.coretemp')
+    def read_croetemp():
+        return super().read_croetemp()
