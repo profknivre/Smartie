@@ -6,6 +6,8 @@ from fanctrl import FanController
 from measurements import Measurements
 
 
+# TODO: make it more reasonable!!!
+
 class TestFanController(TestCase):
     def test_turn_on(self):
         # self.fc.measurements.load()
@@ -25,7 +27,7 @@ class TestFanController(TestCase):
         super().setUp()
 
         self.fan = MagicMock()
-        self.fan.on_time = MagicMock(return_value=330)
+        self.fan.on_time = MagicMock(return_value=3300)
         self.fan.on = MagicMock()
         self.fan.off = MagicMock()
         self.meas = Measurements()

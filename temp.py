@@ -61,7 +61,7 @@ def main():
         fc.do_stuff()
 
         val = fan.is_on()
-        if val == True:
+        if val is True:
             val = 1
         else:
             val = 0

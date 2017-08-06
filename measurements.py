@@ -116,19 +116,19 @@ class TimedMeasurements(Measurements):
     @staticmethod
     def read_apixu():
         with stats.timer('malina0.measurments_time.apixu'):
-            return super().read_apixu()
+            return Measurements.read_apixu()
 
     @staticmethod
     def read_ds18():
         with stats.timer('malina0.measurments_time.ds18read'):
-            return super().read_ds18()
+            return Measurements.read_ds18()
 
     @staticmethod
     def read_dht():
         with stats.timer('malina0.measurments_time.dhtread'):
-            return super().read_dht()
+            return Measurements.read_dht()
 
     @staticmethod
     def read_croetemp():
         with stats.timer('malina0.measurments_time.coretemp'):
-            return super().read_croetemp()
+            return Measurements.read_croetemp()

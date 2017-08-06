@@ -1,7 +1,12 @@
+import logging
+import os
 from time import localtime
 
 from fan import Fan
 from measurements import Measurements
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 class FanCondition:
@@ -11,14 +16,14 @@ class FanCondition:
 
     def __call__(self):
         retval = self.handle()
-        # clasname=self.__class__.__name__
-        # print(f'{clasname}(C) -> {retval}')
+        log.debug('{}(C) -> {}'.format(self.__class__.__name__, retval))
         return retval
 
     def __bool__(self):
         retval = self.handle()
         # clasname = self.__class__.__name__
         # print(f'{clasname}(B) -> {retval}')
+        log.debug('{}(B) -> {}'.format(self.__class__.__name__, retval))
         return retval
 
     def handle(self):
@@ -29,6 +34,9 @@ class FanCondition:
 
     @staticmethod
     def min_on_time():
+        """
+        :return: minimum running time depending on weekday and hour
+        """
         current_time = localtime()
 
         if current_time.tm_wday in (5, 6):  # weekend
@@ -39,6 +47,9 @@ class FanCondition:
 
     @staticmethod
     def max_on_time():
+        """
+        :return: maximum running time depending on weekday and hour
+        """
         current_time = localtime()
 
         if current_time.tm_wday in (5, 6):  # weekend
@@ -59,6 +70,9 @@ class FanStartCond(FanCondition):
 
 
 class HighHumidityAndHighSlopeCondtion(FanStartCond):
+    """
+    if humidity >= 80 and slope >= 1:
+    """
     def handle(self):
         humidity, slope = self.measurements.humidity, self.measurements.slope
         if humidity >= 80 and slope >= 1:
@@ -68,6 +82,9 @@ class HighHumidityAndHighSlopeCondtion(FanStartCond):
 
 
 class LowHumiditySmallSlopeCondition(FanStopCond):
+    """
+    if humidity < 80 and slope > -0.25 and self.fan.on_time() > self.min_on_time()
+    """
     def handle(self):
         humidity, slope = self.measurements.humidity, self.measurements.slope
         if humidity < 80 and slope > -0.25 and self.fan.on_time() > self.min_on_time():
@@ -77,8 +94,33 @@ class LowHumiditySmallSlopeCondition(FanStopCond):
 
 
 class LongRunningTimeCondition(FanStopCond):
+    """
+    if self.fan.on_time() > self.max_on_time():
+    """
     def handle(self):
         if self.fan.on_time() > self.max_on_time():
+            self.take_action()
+            return True
+        return False
+
+
+FORCEFANSTOP = '/tmp/forcefanstop'
+FORCEFANSTART = '/tmp/forcefanstart'
+
+
+class ForceStartCondition(FanStartCond):
+    def handle(self):
+        if os.path.exists(FORCEFANSTART):
+            os.unlink(FORCEFANSTART)
+            self.take_action()
+            return True
+        return False
+
+
+class ForceStopCondition(FanStopCond):
+    def handle(self):
+        if os.path.exists(FORCEFANSTOP):
+            os.unlink(FORCEFANSTOP)
             self.take_action()
             return True
         return False

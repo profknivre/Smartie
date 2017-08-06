@@ -1,8 +1,11 @@
-import os
+import logging
 
-from conditions import HighHumidityAndHighSlopeCondtion, LowHumiditySmallSlopeCondition, LongRunningTimeCondition
+from conditions import *
 from fan import Fan
 from measurements import Measurements
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 class FanController:
@@ -10,27 +13,19 @@ class FanController:
         self.fan = fan
         self.measurements = measurements
 
-        self.startconds = [HighHumidityAndHighSlopeCondtion(self.fan, self.measurements)]
-        self.stopconds = [LowHumiditySmallSlopeCondition(self.fan, self.measurements),
-                          LongRunningTimeCondition(self.fan, self.measurements)]
+        self.startconds = [HighHumidityAndHighSlopeCondtion(self.fan, self.measurements),
+                           ForceStartCondition(self.fan, self.measurements)]
 
-    # def get_slope(self, current_val, update=True):
-    #     dq = self.db.get('hum_hist', deque(maxlen=10))
-    #     dq3 = self.db.get('hum_hist3', deque(maxlen=3))
-    #
-    #     if update:
-    #         dq.append(current_val)
-    #         self.db['hum_hist'] = dq
-    #         dq3.append(current_val)
-    #         self.db['hum_hist3'] = dq3
-    #
-    #     a = get_slope(dq)
-    #
-    #     return a
+        self.stopconds = [LowHumiditySmallSlopeCondition(self.fan, self.measurements),
+                          LongRunningTimeCondition(self.fan, self.measurements),
+                          ForceStopCondition(self.fan, self.measurements)]
+
 
     def do_stuff(self):
         if not os.path.exists('/tmp/bypass'):
             if any(self.startconds):
-                print('Fan started')
+                log.info('Fan started')
             if any(self.stopconds):
-                print('Fan stopped')
+                log.info('Fan stopped')
+        else:
+            log.info('Bypass /tmp/bypass')
