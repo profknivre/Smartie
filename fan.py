@@ -39,7 +39,7 @@ class Fan:
             return 0
         on_time = self.db.get('on_time', time())
         retval = time() - on_time
-        return retval
+        return int(retval)
 
     def on_time_last(self):
         return self.db.get('on_time_last', 0)
