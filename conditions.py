@@ -61,12 +61,12 @@ class FanCondition:
 
 class FanStopCond(FanCondition):
     def take_action(self):
-        self.fan.off()
+        self.fan.off(self.__class__.__name__)
 
 
 class FanStartCond(FanCondition):
     def take_action(self):
-        self.fan.on()
+        self.fan.on(self.__class__.__name__)
 
 
 class HighHumidityAndHighSlopeCondtion(FanStartCond):

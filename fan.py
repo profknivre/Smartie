@@ -11,17 +11,23 @@ class Fan:
         self.gpio_pin = gpio_pin
         self.db = database
 
-    def on(self):
+    def on(self, who=None):
         on_time = self.db.get('on_time', time())
         self.gpio_pin.setOutput(1)
         self.db['on_time'] = on_time
+        if who is not None:
+            self.db['who_on'] = who
+        self.db['when_on'] = time()
         if 'off_time' in self.db:
             del self.db['off_time']
 
-    def off(self):
+    def off(self, who=None):
         if self.is_on():
             self.db['on_time_last'] = self.on_time()
             self.db['off_time'] = time()
+            if who is not None:
+                self.db['who_off'] = who
+            self.db['when_off'] = time()
             del self.db['on_time']
             self.gpio_pin.setOutput(0)
 
@@ -62,10 +68,10 @@ def main():
             print('Fan is off')
 
     if (args.val == 1):  # start
-        fan.on()
+        fan.on('manual_ovveride')
 
     if (args.val == 0):  # stop
-        fan.off()
+        fan.off('manual_ovveride')
 
     database.close()
 
