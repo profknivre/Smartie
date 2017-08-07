@@ -63,7 +63,7 @@ def main():
     if (args.val is None):  # read
         ison = fan.is_on()
         if ison:
-            print('Fan on for: {:d}'.format(timedelta(seconds=int(fan.on_time()))))
+            print('Fan on for: {}'.format(timedelta(seconds=int(fan.on_time()))))
         else:
             print('Fan is off')
 
