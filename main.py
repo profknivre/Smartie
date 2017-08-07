@@ -45,7 +45,7 @@ class ActualFan(Fan):
     def off(self, who):
         with open('/tmp/fanlog.txt', 'at') as f:
             f.write('Disabled by {} @ {}\n'.format(who, ctime()))
-            f.write('{} fann was ruuning for: {}({}s)\n'.format(
+            f.write('{} fan was ruining for: {}({:.0f}s)\n'.format(
                 ctime(), timedelta(seconds=self.on_time()), self.on_time()))
         return Fan.off(self, who)
 
@@ -69,13 +69,7 @@ def main():
         fc = FanController(fan, m)
         fc.do_stuff()
 
-        val = fan.is_on()
-        if val is True:
-            val = 1
-        else:
-            val = 0
-
-        stats.gauge('mieszkanie.lazienka.wentylator', val)
+        stats.gauge('mieszkanie.lazienka.wentylator', int(fan.is_on()))
 
         # TODO pretty print this shite
         print(str(m))
