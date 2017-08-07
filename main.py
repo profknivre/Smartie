@@ -36,15 +36,15 @@ class ActualFan(Fan):
         self.database_ = shelve.open('/tmp/fan_data')
         super().__init__(gp, self.database_)
 
-    def on(self, who=None):
+    def on(self, who):
         with open('/tmp/fanlog.txt', 'at') as f:
-            f.write('Enabled by {} @ {}'.format(
-                self.db.get('who_on', None), ctime(self.db.get('when_on', 0))))
+            f.write('Enabled by {} @ {}\n'.format(
+                who, ctime()))
         return super().on(who)
 
     def off(self, who):
         with open('/tmp/fanlog.txt', 'at') as f:
-            f.write('Disabled by {} @ {}'.format(who, ctime()))
+            f.write('Disabled by {} @ {}\n'.format(who, ctime()))
             f.write('{} fann was ruuning for: {}({}s)\n'.format(
                 ctime(), timedelta(seconds=self.on_time()), self.on_time()))
         return Fan.off(self, who)
