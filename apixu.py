@@ -1,5 +1,6 @@
 import shelve
 from contextlib import suppress
+from functools import lru_cache
 from time import time
 
 import requests
@@ -51,7 +52,7 @@ def _getdata_raw():
 #         }
 #     }
 
-
+@lru_cache()  # speedup tests
 def getdata():
     with shelve.open('/tmp/apixu_last_weather') as db:
         olddata = db.get('olddata', dict())

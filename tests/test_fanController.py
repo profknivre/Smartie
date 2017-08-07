@@ -5,8 +5,9 @@ from case.mock import MagicMock
 from fanctrl import FanController
 from measurements import Measurements
 
-
 # TODO: make it more reasonable!!!
+
+mea = Measurements()  # speedup tests
 
 class TestFanController(TestCase):
     def test_turn_on(self):
@@ -30,5 +31,5 @@ class TestFanController(TestCase):
         self.fan.on_time = MagicMock(return_value=3300)
         self.fan.on = MagicMock()
         self.fan.off = MagicMock()
-        self.meas = Measurements()
+        self.meas = mea
         self.fc = FanController(self.fan, self.meas)

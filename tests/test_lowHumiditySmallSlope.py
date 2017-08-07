@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 from conditions import LowHumiditySmallSlopeCondition
 from measurements import Measurements
 
+mea = Measurements()  # speedup tests
 
 class TestLowHumiditySmallSlope(TestCase):
     def test_handle_nostop(self):
@@ -32,5 +33,5 @@ class TestLowHumiditySmallSlope(TestCase):
         super().setUp()
         self.fan = MagicMock()
         self.fan.off = MagicMock()
-        self.meas = Measurements()
+        self.meas = mea
         self.cond = LowHumiditySmallSlopeCondition(self.fan, self.meas)
