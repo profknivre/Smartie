@@ -1,4 +1,5 @@
 import shelve
+from datetime import timedelta
 from time import time
 
 from gpio import GPIOBase
@@ -53,16 +54,20 @@ def main():
 
     fan = Fan(gp, database)
 
-    if (args.val == None):  # read
+    if (args.val is None):  # read
         ison = fan.is_on()
         if ison:
-            print('Fan on for: {:d}'.format(int(fan.on_time())))
+            print('Fan on for: {:d}'.format(timedelta(seconds=int(fan.on_time()))))
+        else:
+            print('Fan is off')
 
     if (args.val == 1):  # start
         fan.on()
 
     if (args.val == 0):  # stop
         fan.off()
+
+    database.close()
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import shelve
+from datetime import timedelta
 from time import ctime
 
 from fan import Fan
@@ -37,7 +38,7 @@ class ActualFan(Fan):
 
     def off(self):
         with open('/tmp/fanlog.txt', 'at') as f:
-            f.write('{} fann was ruuning for: {}\n'.format(ctime(), self.on_time()))
+            f.write('{} fann was ruuning for: {}\n'.format(ctime(), timedelta(seconds=self.on_time())))
         Fan.off(self)
 
     def __del__(self):
