@@ -107,6 +107,8 @@ class Measurements(MeasurmentsInternals):
         self.apixtemp, self.apixhum = self.read_apixu()
         self.coretemp = self.read_croetemp()
 
+        self.dump()
+
     def __str__(self) -> str:
         return "Saloon temp: {:2.1f} bathroom temp: {:2.1f} bathroom humidity: {:2.1f}%" \
             .format(self.ds18temp, self.temperature, self.humidity)
@@ -120,6 +122,10 @@ class Measurements(MeasurmentsInternals):
         dct = vars(self)
         with open(fname, 'w') as f:
             dump(dct, f)
+
+    def dump(self):
+        for k, v in vars(self).items():
+            log.debug('{}:{}\n'.format(k, v))
 
 
 class TimedMeasurements(Measurements):
