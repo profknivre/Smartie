@@ -5,7 +5,7 @@ import shelve
 from datetime import timedelta
 from time import ctime
 
-from fan import Fan
+from fan import TimedFan
 from fanctrl import FanController
 from gpio import SysfsGPIO
 from measurements import TimedMeasurements
@@ -34,7 +34,7 @@ except NameError:
 
 # ---/hack
 
-class ActualFan(Fan):
+class ActualFan(TimedFan):
     def __init__(self):
         gp = SysfsGPIO(pinnumber=13)
         if gp.getDDR() == gp.DDR_INPUT:
@@ -52,7 +52,7 @@ class ActualFan(Fan):
         log.debug('Disabled by {} @ {}\n'.format(who, ctime()))
         log.debug('{} fan was ruining for: {}({:.0f}s)\n'.format(
                 ctime(), timedelta(seconds=self.on_time()), self.on_time()))
-        return Fan.off(self, who)
+        return TimedFan.off(self, who)
 
     def __del__(self):
         self.database_.close()
