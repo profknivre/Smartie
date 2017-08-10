@@ -96,6 +96,22 @@ class MeasurmentsInternals:
 
             return a
 
+    @staticmethod
+    def get_slope3(current_val, update=True):
+        with shelve.open('/tmp/shelve') as db:
+            dq = db.get('hum_hist', deque(maxlen=10))
+            dq3 = db.get('hum_hist3', deque(maxlen=3))
+
+            if update:
+                dq.append(current_val)
+                db['hum_hist'] = dq
+                dq3.append(current_val)
+                db['hum_hist3'] = dq3
+
+            a, b = linreg(range(len(dq3)), dq3)
+
+            return a
+
 
 class Measurements(MeasurmentsInternals):
     def __init__(self):
@@ -103,9 +119,12 @@ class Measurements(MeasurmentsInternals):
         log.debug('Measurements created {}'.format(repr(self)))
         self.humidity, self.temperature = self.read_dht()
         self.slope = self.get_slope(self.humidity)
+        self.slope3 = self.get_slope3(self.humidity)
         self.ds18temp = self.read_ds18()
         self.apixtemp, self.apixhum = self.read_apixu()
         self.coretemp = self.read_croetemp()
+
+        self.dump()
 
     def __str__(self) -> str:
         return "Saloon temp: {:2.1f} bathroom temp: {:2.1f} bathroom humidity: {:2.1f}%" \
@@ -120,6 +139,10 @@ class Measurements(MeasurmentsInternals):
         dct = vars(self)
         with open(fname, 'w') as f:
             dump(dct, f)
+
+    def dump(self):
+        for k, v in vars(self).items():
+            log.debug('{}:{}'.format(k, v))
 
 
 class TimedMeasurements(Measurements):
