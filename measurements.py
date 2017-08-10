@@ -125,7 +125,7 @@ class Measurements(MeasurmentsInternals):
 
     def dump(self):
         for k, v in vars(self).items():
-            log.debug('{}:{}\n'.format(k, v))
+            log.debug('{}:{}'.format(k, v))
 
 
 class TimedMeasurements(Measurements):
