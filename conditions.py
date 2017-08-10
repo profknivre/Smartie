@@ -26,6 +26,9 @@ class FanCondition:
         log.debug('{}(B) -> {}'.format(self.__class__.__name__, retval))
         return retval
 
+    def __str__(self) -> str:
+        return str(self.__class__.__name__)
+
     def handle(self):
         pass
 
@@ -61,12 +64,14 @@ class FanCondition:
 
 class FanStopCond(FanCondition):
     def take_action(self):
-        self.fan.off(self.__class__.__name__)
+        if self.fan.is_on():
+            self.fan.off(str(self))
 
 
 class FanStartCond(FanCondition):
     def take_action(self):
-        self.fan.on(self.__class__.__name__)
+        if not self.fan.is_on():
+            self.fan.on(str(self))
 
 
 class HighHumidityAndHighSlopeCondtion(FanStartCond):

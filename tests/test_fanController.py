@@ -14,6 +14,7 @@ class TestFanController(TestCase):
         # self.fc.measurements.load()
         self.fc.measurements.humidity = 88
         self.fc.measurements.slope = 1
+        self.fan.is_on = MagicMock(return_value=False)
         self.fc.do_stuff()
         self.fc.fan.on.assert_called()
 
@@ -21,6 +22,7 @@ class TestFanController(TestCase):
         # self.fc.measurements.load()
         self.fc.measurements.humidity = 58
         self.fc.measurements.slope = 1
+        self.fan.is_on = MagicMock(return_value=True)
         self.fc.do_stuff()
         self.fc.fan.off.assert_called()
 

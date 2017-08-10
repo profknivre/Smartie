@@ -1,5 +1,5 @@
+import logging
 import shelve
-from contextlib import suppress
 from functools import lru_cache
 from time import time
 
@@ -7,12 +7,17 @@ import requests
 
 from util import timeout
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
 
 def _getdata_raw():
     # response = requests.get('http://api.apixu.com/v1/current.json?key=%s&q=Wroclaw'%('keystring'))
     # in my network 5.8.0.0/16 is not routed outside
     # this is a caching proxy running very similar code but it has api key embedded
+    log.info('Doing apixu request...')
     response = requests.get('http://5.8.0.1/cgi-bin/zonk.py')
+    logging.info('apixu req done')
     return response.json()
 
 
@@ -66,9 +71,11 @@ def getdata():
             need_update = True
 
         if need_update:
-            with suppress((Exception)):
+            try:
                 with timeout(5):
                     olddata = _getdata_raw()
                     db['olddata'] = olddata
+            except Exception as e:
+                log.debug(e)
 
         return olddata
