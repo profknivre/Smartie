@@ -1,7 +1,7 @@
 import logging
 
 from conditions import *
-from fan import Fan
+from fan import TimedFan
 from measurements import Measurements
 
 log = logging.getLogger(__name__)
@@ -9,7 +9,7 @@ log.addHandler(logging.NullHandler())
 
 
 class FanController:
-    def __init__(self, fan: Fan, measurements: Measurements):
+    def __init__(self, fan: TimedFan, measurements: Measurements):
         self.fan = fan
         self.measurements = measurements
 

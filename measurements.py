@@ -1,3 +1,4 @@
+import logging
 import shelve
 import subprocess
 from collections import deque
@@ -5,10 +6,15 @@ from json import dump, load
 
 from util import linreg, TimerMock
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
+
 try:
     import Adafruit_DHT
     import statsd
-except ModuleNotFoundError:
+except ModuleNotFoundError as e:
+    log.error(e)
     pass
 
 from apixu import getdata
@@ -33,7 +39,8 @@ class MeasurmentsInternals:
                 b = f.readline()
                 z = float(b.strip().split('=')[1]) / 1000.0
                 return z
-        except:
+        except Exception as e:
+            log.error(e)
             return 0
 
     @staticmethod
@@ -42,7 +49,8 @@ class MeasurmentsInternals:
             return float(
                 subprocess.check_output(['/opt/vc/bin/vcgencmd', 'measure_temp'])
                     .decode('utf8').strip()[5:].replace("'C", ''))
-        except:
+        except Exception as e:
+            log.error(e)
             return 0
 
     @staticmethod
@@ -50,8 +58,8 @@ class MeasurmentsInternals:
         humidity, temperature = 0, 0
         try:
             humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, 19)
-        except:
-            pass
+        except Exception as e:
+            log.error(e)
 
         return humidity, temperature
 
@@ -60,11 +68,11 @@ class MeasurmentsInternals:
         apixu = getdata()
 
         if 'current' not in apixu:
-            print('apixu broken')
+            log.error('apixu broken')
             return -1, -1
         else:
             if 'temp_c' not in apixu['current'] or 'humidity' not in apixu['current']:
-                print('apixu broken2')
+                log.error('apixu broken2')
                 return -1, -1
 
         temperature = apixu['current']['temp_c']
@@ -91,6 +99,8 @@ class MeasurmentsInternals:
 
 class Measurements(MeasurmentsInternals):
     def __init__(self):
+        super().__init__()
+        log.debug('Measurements created {}'.format(repr(self)))
         self.humidity, self.temperature = self.read_dht()
         self.slope = self.get_slope(self.humidity)
         self.ds18temp = self.read_ds18()

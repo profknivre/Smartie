@@ -1,17 +1,24 @@
 #!/usr/bin/python3
 
+import logging
 import shelve
 from datetime import timedelta
 from time import ctime
 
-from fan import Fan
+from fan import TimedFan
 from fanctrl import FanController
 from gpio import SysfsGPIO
 from measurements import TimedMeasurements
 from util import TimerMock
 
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
+                    filename='/tmp/smartie.log')
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
+
 try:
-    import Adafruit_DHT
     import statsd
 except ModuleNotFoundError:
     pass
@@ -27,7 +34,7 @@ except NameError:
 
 # ---/hack
 
-class ActualFan(Fan):
+class ActualFan(TimedFan):
     def __init__(self):
         gp = SysfsGPIO(pinnumber=13)
         if gp.getDDR() == gp.DDR_INPUT:
@@ -37,23 +44,22 @@ class ActualFan(Fan):
         super().__init__(gp, self.database_)
 
     def on(self, who):
-        with open('/tmp/fanlog.txt', 'at') as f:
-            f.write('Enabled by {} @ {}\n'.format(
+        log.debug('Enabled by {} @ {}\n'.format(
                 who, ctime()))
         return super().on(who)
 
     def off(self, who):
-        with open('/tmp/fanlog.txt', 'at') as f:
-            f.write('Disabled by {} @ {}\n'.format(who, ctime()))
-            f.write('{} fan was ruining for: {}({:.0f}s)\n'.format(
+        log.debug('Disabled by {} @ {}\n'.format(who, ctime()))
+        log.debug('{} fan was ruining for: {}({:.0f}s)\n'.format(
                 ctime(), timedelta(seconds=self.on_time()), self.on_time()))
-        return Fan.off(self, who)
+        return TimedFan.off(self, who)
 
     def __del__(self):
         self.database_.close()
 
 
 def main():
+    log.info('sztartin...')
     with stats.timer('malina0.measurments_time.total'):
         m = TimedMeasurements()
 
@@ -72,7 +78,7 @@ def main():
         stats.gauge('mieszkanie.lazienka.wentylator', int(fan.is_on()))
 
         # TODO pretty print this shite
-        print(str(m))
+        log.info(str(m))
 
 
 if __name__ == '__main__':

@@ -7,13 +7,28 @@ from gpio import SysfsGPIO
 
 
 class Fan:
-    def __init__(self, gpio_pin=GPIOBase(), database=dict()):
+    def __init__(self, gpio_pin=GPIOBase()):
         self.gpio_pin = gpio_pin
+
+    def on(self):
+        self.gpio_pin.setOutput(1)
+
+    def off(self):
+        if self.is_on():
+            self.gpio_pin.setOutput(0)
+
+    def is_on(self) -> bool:
+        return self.gpio_pin.getInput() == 1
+
+
+class TimedFan(Fan):
+    def __init__(self, gpio_pin=GPIOBase(),database=dict()):
+        super().__init__(gpio_pin)
         self.db = database
 
     def on(self, who=None):
         on_time = self.db.get('on_time', time())
-        self.gpio_pin.setOutput(1)
+        super().on()
         self.db['on_time'] = on_time
         if who is not None:
             self.db['who_on'] = who
@@ -29,10 +44,7 @@ class Fan:
                 self.db['who_off'] = who
             self.db['when_off'] = time()
             del self.db['on_time']
-            self.gpio_pin.setOutput(0)
-
-    def is_on(self) -> bool:
-        return self.gpio_pin.getInput() == 1
+            super().off()
 
     def on_time(self):
         if not self.is_on():
@@ -58,7 +70,7 @@ def main():
 
     database = shelve.open('/tmp/fan_data')
 
-    fan = Fan(gp, database)
+    fan = TimedFan(gp, database)
 
     if (args.val is None):  # read
         ison = fan.is_on()

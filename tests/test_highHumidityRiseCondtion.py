@@ -32,5 +32,6 @@ class TestHighHumidityRiseCondtion(TestCase):
         super().setUp()
         self.fan = MagicMock()
         self.fan.on = MagicMock()
+        self.fan.is_on = MagicMock(return_value=False)
         self.meas = mea
         self.cond = HighHumidityAndHighSlopeCondtion(self.fan, self.meas)

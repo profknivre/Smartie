@@ -1,14 +1,14 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
-from fan import Fan
+from fan import TimedFan
 
 
 class TestFan(TestCase):
     def setUp(self):
         super().setUp()
         self.db = dict()
-        self.fan = Fan(gpio_pin=MagicMock(), database=self.db)
+        self.fan = TimedFan(gpio_pin=MagicMock(), database=self.db)
 
     def tearDown(self):
         super().tearDown()
