@@ -17,7 +17,7 @@ def _getdata_raw():
     # this is a caching proxy running very similar code but it has api key embedded
     log.info('Doing apixu request...')
     response = requests.get('http://5.8.0.1/cgi-bin/zonk.py')
-    logging.info('apixu req done')
+    log.info('apixu req done')
     return response.json()
 
 
