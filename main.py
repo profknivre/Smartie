@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import logging
+from logging.handlers import RotatingFileHandler
 import shelve
 from datetime import timedelta
 from time import ctime
@@ -11,13 +12,16 @@ from gpio import SysfsGPIO
 from measurements import TimedMeasurements
 from util import TimerMock
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
-                    filename='/tmp/smartie.log')
+#logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
+#                   filename='/tmp/smartie.log')
+
+bf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler = RotatingFileHandler('/tmp/smartie.log', maxBytes=10*1024*1024, backupCount=10)
+handler.setFormatter(bf)
+logging.getLogger().addHandler(handler)
+logging.getLogger().setLevel(logging.DEBUG)
 
 log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
-
-
 try:
     import statsd
 except ModuleNotFoundError:
