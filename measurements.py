@@ -130,6 +130,9 @@ class Measurements(MeasurmentsInternals):
         return "Saloon temp: {:2.1f} bathroom temp: {:2.1f} bathroom humidity: {:2.1f}%" \
             .format(self.ds18temp, self.temperature, self.humidity)
 
+    def __del__(self):
+        log.debug('Deleting {}'.format(repr(self)))
+
     def load(self, fname):
         with open(fname, 'r') as f:
             dct = load(f)
@@ -142,6 +145,8 @@ class Measurements(MeasurmentsInternals):
 
     def dump(self):
         for k, v in vars(self).items():
+            if isinstance(v,float):
+                v=round(v,2)
             log.debug('{}:{}'.format(k, v))
 
 

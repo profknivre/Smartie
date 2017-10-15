@@ -43,14 +43,14 @@ class ActualFan(TimedFan):
         self.database_ = shelve.open('/tmp/fan_data')
         super().__init__(gp, self.database_)
 
-    def on(self, who):
-        log.debug('Enabled by {} @ {}\n'.format(
+    def on(self, who=None):
+        log.debug('Enabled by {} @ {}'.format(
                 who, ctime()))
         return super().on(who)
 
-    def off(self, who):
-        log.debug('Disabled by {} @ {}\n'.format(who, ctime()))
-        log.debug('{} fan was ruining for: {}({:.0f}s)\n'.format(
+    def off(self, who=None):
+        log.debug('Disabled by {} @ {}'.format(who, ctime()))
+        log.debug('{} fan was ruining for: {}({:.0f}s)'.format(
                 ctime(), timedelta(seconds=self.on_time()), self.on_time()))
         return TimedFan.off(self, who)
 
