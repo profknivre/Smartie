@@ -12,16 +12,16 @@ mea = Measurements()  # speedup tests
 class TestFanController(TestCase):
     def test_turn_on(self):
         # self.fc.measurements.load()
-        self.fc.measurements.humidity = 88
-        self.fc.measurements.slope = 1
+        self.fc.measurements.bathroom_humidity = 88
+        self.fc.measurements.bathroom_humidity_slope = 1
         self.fan.is_on = MagicMock(return_value=False)
         self.fc.do_stuff()
         self.fc.fan.on.assert_called()
 
     def test_turn_off(self):
         # self.fc.measurements.load()
-        self.fc.measurements.humidity = 58
-        self.fc.measurements.slope = 1
+        self.fc.measurements.bathroom_humidity = 58
+        self.fc.measurements.bathroom_humidity_slope = 1
         self.fan.is_on = MagicMock(return_value=True)
         self.fc.do_stuff()
         self.fc.fan.off.assert_called()

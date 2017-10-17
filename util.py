@@ -44,9 +44,20 @@ class timeout:
 
 
 class TimerMock:
-    def timer(args):
+    class timer:
+        def __init__(self, caption):
+            pass
+
+        def __enter__(self):
+            return
+
+        def __exit__(self, type, value, traceback):
+            return
         def a(arg):
             pass
 
-        return a
+    class gauge:
+        def __init__(self, caption, val):
+            pass
 
+# return a

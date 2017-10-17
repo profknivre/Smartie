@@ -1,15 +1,15 @@
 #!/usr/bin/python3
 
 import logging
-from logging.handlers import RotatingFileHandler
 import shelve
 from datetime import timedelta
+from logging.handlers import RotatingFileHandler
 from time import ctime
 
 from fan import TimedFan
 from fanctrl import FanController
 from gpio import SysfsGPIO
-from measurements import TimedMeasurements
+from measurements import Measurements
 from util import TimerMock
 
 #logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
@@ -65,15 +65,7 @@ class ActualFan(TimedFan):
 def main():
     log.info('sztartin...')
     with stats.timer('malina0.measurments_time.total'):
-        m = TimedMeasurements()
-
-        stats.gauge('mieszkanie.temp1', m.ds18temp)
-        stats.gauge('malina0.core_temp', m.coretemp)
-        stats.gauge('mieszkanie.lazienka.temp', m.temperature)
-        stats.gauge('mieszkanie.lazienka.humidity', m.humidity)
-        stats.gauge('mieszkanie.lazienka.humidity_slope', m.slope)
-        stats.gauge('mieszkanie.temp_zew', m.apixtemp)
-        stats.gauge('mieszkanie.humi_zew', m.apixhum)
+        m = Measurements()
 
         fan = ActualFan()
         fc = FanController(fan, m)

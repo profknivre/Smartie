@@ -8,22 +8,22 @@ mea = Measurements()  # speedup tests
 
 class TestHighHumidityRiseCondtion(TestCase):
     def test_handle_run(self):
-        self.meas.humidity = 88
-        self.meas.slope = 1
+        self.meas.bathroom_humidity = 88
+        self.meas.bathroom_humidity_slope = 1
 
         self.cond()
         self.fan.on.assert_called()
 
     def test_handle_notrun1(self):
-        self.meas.humidity = 78
-        self.meas.slope = 1
+        self.meas.bathroom_humidity = 78
+        self.meas.bathroom_humidity_slope = 1
 
         self.cond()
         self.fan.on.assert_not_called()
 
     def test_handle_notrun2(self):
-        self.meas.humidity = 88
-        self.meas.slope = 0.51
+        self.meas.bathroom_humidity = 88
+        self.meas.bathroom_humidity_slope = 0.51
 
         self.cond()
         self.fan.on.assert_not_called()
