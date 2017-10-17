@@ -74,7 +74,7 @@ class FanStartCond(FanCondition):
             self.fan.on(str(self))
 
 
-class HighHumidityAndHighSlopeCondtion(FanStartCond):
+class HighHumidityAndHighSlopeCondition(FanStartCond):
     """
     if humidity >= 80 and slope >= 1:
     """
