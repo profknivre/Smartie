@@ -32,19 +32,22 @@ except NameError:
 
 class MeasurementsInternals2():
     class Sloper:  # UGLY
-        def __init__(self, current_val, update=True):
+        def __init__(self, current_val_rdr):
+            self.reader = current_val_rdr
             self.gauge_caption = 'mieszkanie.lazienka.humidity_slope'
+
+        def read(self):
+            current_val = self.reader.read()
 
             with shelve.open('/tmp/shelve') as db:
                 dq = db.get('hum_hist', deque(maxlen=10))
-                if update:
-                    dq.append(current_val)
-                    db['hum_hist'] = dq
-                    log.debug('adding {} into history'.format(current_val))
+
+                dq.append(current_val)
+                db['hum_hist'] = dq
+                log.debug('adding {} into history'.format(current_val))
 
                 self.slope = linreg(range(len(dq)), dq)[0]
 
-        def read(self):
             return self.slope
 
     def __init__(self):
@@ -54,7 +57,7 @@ class MeasurementsInternals2():
         self.online_temperature = OnlineTemperature(gauge_caption='mieszkanie.temp_zew')
         self.online_humidity = OnlineHumidity(gauge_caption='mieszkanie.humi_zew')
         self.core_temperature = CoreTemp(gauge_caption='malina0.core_temp')
-        self.bathroom_humidity_slope = self.Sloper(self.bathroom_humidity.read())  # !!! TODO fixme!!!
+        self.bathroom_humidity_slope = self.Sloper(self.bathroom_humidity)  # !!! TODO fixme!!!
 
 
 class Measurements():
