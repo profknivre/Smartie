@@ -68,15 +68,15 @@ class Measurements():
 
             if hasattr(v, 'timing_caption'):
                 with stats.timer(v.timing_caption):
-                    log.debug('timing: {}'.format(v.timing_caption))
+                    # log.debug('timing: {}'.format(v.timing_caption))
                     value = v.read()
             else:
-                log.debug('not timing: {}'.format(k))
+                # log.debug('not timing: {}'.format(k))
                 value = v.read()
 
             if hasattr(v, 'gauge_caption'):
                 stats.gauge(v.gauge_caption, value)
-                log.debug('stat {}:{}'.format(v.gauge_caption, value))
+                # log.debug('stat {}:{}'.format(v.gauge_caption, value))
             setattr(self, k, value)
 
         self.dump()
@@ -85,8 +85,8 @@ class Measurements():
         return "Saloon temp: {:2.1f} bathroom temp: {:2.1f} bathroom humidity: {:2.1f}%" \
             .format(self.saloon_temperature, self.bathroom_temperature, self.bathroom_humidity)
 
-    def __del__(self):
-        log.debug('Deleting {}'.format(repr(self)))
+    # def __del__(self):
+    #     log.debug('Deleting {}'.format(repr(self)))
 
     def load(self, fname):
         with open(fname, 'r') as f:
