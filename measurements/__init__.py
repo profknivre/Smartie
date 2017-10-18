@@ -6,7 +6,7 @@ from json import dump, load
 from measurements.coretemp import CoreTemp
 from measurements.dht import DhtTemperature, DhtHumidity
 from measurements.ds18 import Ds18
-from measurements.online_wather import OnlineTemperature, OnlineHumidity
+from measurements.online_weather import OnlineTemperature, OnlineHumidity
 from util import linreg, TimerMock
 
 log = logging.getLogger(__name__)
