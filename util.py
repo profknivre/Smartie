@@ -66,3 +66,24 @@ def isQuietTime(current_time):
         if current_time.tm_hour in (list(range(0, 6)) + list(range(23, 24))):
             return True
     return False
+
+
+class UberAdapter:
+    """
+    singletonizer ??
+    """
+
+    retval = {}
+
+    def __init__(self, adaptee, index, **kwargs):
+        self.adaptee = adaptee
+        self.index = index
+        self.timing_caption = kwargs.get('timing_caption', adaptee.timing_caption)
+        self.gauge_caption = kwargs.get('gauge_caption', adaptee.gauge_caption)
+        UberAdapter.retval[id(self.adaptee)] = None
+        super().__init__()
+
+    def read(self):
+        if UberAdapter.retval[id(self.adaptee)] is None:
+            UberAdapter.retval[id(self.adaptee)] = self.adaptee.read()
+        return UberAdapter.retval[id(self.adaptee)][self.index]

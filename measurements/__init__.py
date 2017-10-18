@@ -4,10 +4,10 @@ from collections import deque
 from json import dump, load
 
 from measurements.coretemp import CoreTemp
-from measurements.dht import DhtTemperature, DhtHumidity
+from measurements.dht import Dht
 from measurements.ds18 import Ds18
-from measurements.online_weather import OnlineTemperature, OnlineHumidity
-from util import linreg, TimerMock
+from measurements.online_weather import OnlineWeather
+from util import linreg, TimerMock, UberAdapter
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -35,6 +35,7 @@ class MeasurementsInternals2():
         def __init__(self, current_val_rdr):
             self.reader = current_val_rdr
             self.gauge_caption = 'mieszkanie.lazienka.humidity_slope'
+            self.timing_caption = 'malina0.measurments_time.dhtread'
 
         def read(self):
             current_val = self.reader.read()
@@ -51,31 +52,39 @@ class MeasurementsInternals2():
             return self.slope
 
     def __init__(self):
-        self.bathroom_temperature = DhtTemperature(gauge_caption='mieszkanie.lazienka.temp')
-        self.bathroom_humidity = DhtHumidity(gauge_caption='mieszkanie.lazienka.humidity')
-        self.saloon_temperature = Ds18(sensor_id='28-0115915119ff', gauge_caption='mieszkanie.temp1')
-        self.online_temperature = OnlineTemperature(gauge_caption='mieszkanie.temp_zew')
-        self.online_humidity = OnlineHumidity(gauge_caption='mieszkanie.humi_zew')
-        self.core_temperature = CoreTemp(gauge_caption='malina0.core_temp')
+        dht = Dht()
+        self.bathroom_temperature = UberAdapter(dht, 1, gauge_caption='mieszkanie.lazienka.temp')
+        self.bathroom_humidity = UberAdapter(dht, 0, gauge_caption='mieszkanie.lazienka.humidity')
         self.bathroom_humidity_slope = self.Sloper(self.bathroom_humidity)  # !!! TODO fixme!!!
+
+        ot = OnlineWeather()
+        self.online_temperature = UberAdapter(ot, 1, gauge_caption='mieszkanie.temp_zew')
+        self.online_humidity = UberAdapter(ot, 0, gauge_caption='mieszkanie.humi_zew')
+
+        self.saloon_temperature = Ds18(sensor_id='28-0115915119ff', gauge_caption='mieszkanie.temp1')
+        self.core_temperature = CoreTemp(gauge_caption='malina0.core_temp')
 
 
 class Measurements():
     def __init__(self):
         m = MeasurementsInternals2()
 
-        for k, v in vars(m).items():
+        timed = set()
+        gaged = set()
 
-            if hasattr(v, 'timing_caption'):
+        for k, v in vars(m).items():
+            if hasattr(v, 'timing_caption') and v.timing_caption not in timed:
                 with stats.timer(v.timing_caption):
                     # log.debug('timing: {}'.format(v.timing_caption))
                     value = v.read()
+                    timed.add(v.timing_caption)
             else:
                 # log.debug('not timing: {}'.format(k))
                 value = v.read()
 
-            if hasattr(v, 'gauge_caption'):
+            if hasattr(v, 'gauge_caption') and v.gauge_caption not in gaged:
                 stats.gauge(v.gauge_caption, value)
+                gaged.add(v.gauge_caption)
                 # log.debug('stat {}:{}'.format(v.gauge_caption, value))
             setattr(self, k, value)
 

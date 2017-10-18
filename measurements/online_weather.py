@@ -13,6 +13,7 @@ log.addHandler(logging.NullHandler())
 
 
 class OnlineWeather(BaseMeasurement):
+    instance = None
     def __init__(self, **kwargs):
         if 'timing_caption' not in kwargs:
             kwargs['timing_caption'] = 'malina0.measurments_time.apixu'
@@ -34,17 +35,6 @@ class OnlineWeather(BaseMeasurement):
 
         # return temperature, humidity
         return humidity, temperature
-
-
-class OnlineTemperature(OnlineWeather):
-    def read(self):
-        return super().read()[1]
-
-
-class OnlineHumidity(OnlineWeather):
-    def read(self):
-        return super().read()[0]
-
 
 @lru_cache()  # speedup tests
 def getdata():

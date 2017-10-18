@@ -15,7 +15,7 @@ class Dht(BaseMeasurement):
             kwargs['timing_caption'] = 'malina0.measurments_time.dhtread'
         super().__init__(**kwargs)
 
-    def _read(self):
+    def read(self):
         humidity, temperature = 0, 0
         try:
             import Adafruit_DHT
@@ -24,25 +24,3 @@ class Dht(BaseMeasurement):
             log.error(e)
 
         return humidity, temperature
-
-    def read(self):
-        global last_read
-        global last_read_time
-
-        from time import time
-        t = time()
-        if (t - last_read_time > 30):
-            last_read_time = t
-            last_read = self._read()
-
-        return last_read
-
-
-class DhtTemperature(Dht):
-    def read(self):
-        return super().read()[1]
-
-
-class DhtHumidity(Dht):
-    def read(self):
-        return super().read()[0]
