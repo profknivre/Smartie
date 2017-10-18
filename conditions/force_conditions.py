@@ -1,12 +1,12 @@
 import os
 
-from conditions import FanStartCond, FanStopCond
+from conditions import FanStartCondition, FanStopCondition
 
 FORCEFANSTOP = '/tmp/forcefanstop'
 FORCEFANSTART = '/tmp/forcefanstart'
 
 
-class ForceStartCondition(FanStartCond):
+class ForceStartCondition(FanStartCondition):
     def handle(self):
         if os.path.exists(FORCEFANSTART):
             os.unlink(FORCEFANSTART)
@@ -15,7 +15,7 @@ class ForceStartCondition(FanStartCond):
         return False
 
 
-class ForceStopCondition(FanStopCond):
+class ForceStopCondition(FanStopCondition):
     def handle(self):
         if os.path.exists(FORCEFANSTOP):
             os.unlink(FORCEFANSTOP)

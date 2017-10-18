@@ -1,39 +1,35 @@
+import logging
 import os
+from inspect import isabstract
 
-from conditions import *
+from conditions import FanStopCondition, FanStartCondition
 from fan import TimedFan
 from measurements import Measurements
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
-modules = dir()
-
 class FanController:
     def __init__(self, fan: TimedFan, measurements: Measurements):
-        global modules
         self.fan = fan
         self.measurements = measurements
 
-        conditions = list(filter(lambda x: 'Condition' in x, modules))
-        # print(conditions)
-        self.startconds = []
-        self.stopconds = []
+        import conditions
 
-        for cond in conditions:
-            cls = eval(cond)
-            if issubclass(cls, FanStartCond):
-                self.startconds.append(cls(self.fan, self.measurements))
-            elif issubclass(cls, FanStopCond):
-                self.stopconds.append(cls(self.fan, self.measurements))
-            else:
-                log.error('{:s} is neither FanStartCond nor FanStopCond'.format(cond))
+        constraint = lambda x: issubclass(x, (FanStartCondition, FanStopCondition)) and not isabstract(x)
+        sort_key = lambda x: issubclass(x, FanStopCondition)
+
+        _conditions = filter(lambda x: 'Condition' in x, dir(conditions))
+        _conditions = map(lambda x: 'conditions.{:s}'.format(x), _conditions)
+        _conditions = map(eval, _conditions)
+        _conditions = sorted(filter(constraint, _conditions), key=sort_key)  # start conditions first
+        self.conditions = list(map(lambda x: x(fan, measurements), _conditions))
 
     def do_stuff(self):
         if not os.path.exists('/tmp/bypass'):
-            if any(self.startconds):
-                log.info('Fan started')
-            if any(self.stopconds):
-                log.info('Fan stopped')
+            any(self.conditions)
         else:
             log.info('Bypass /tmp/bypass')
+
+    def __call__(self, *args, **kwargs):
+        return self.do_stuff()

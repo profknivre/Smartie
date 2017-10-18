@@ -1,4 +1,5 @@
 import logging
+from abc import ABC, abstractmethod
 from time import localtime
 
 from fan import TimedFan
@@ -9,7 +10,7 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class FanCondition:
+class FanCondition(ABC):
     def __init__(self, fan: TimedFan, measurements: Measurements):
         self.fan = fan
         self.measurements = measurements
@@ -24,6 +25,7 @@ class FanCondition:
     def __str__(self) -> str:
         return str(self.__class__.__name__)
 
+    @abstractmethod
     def handle(self):
         pass
 
@@ -45,13 +47,13 @@ class FanCondition:
         return 60 * 60
 
 
-class FanStopCond(FanCondition):
+class FanStopCondition(FanCondition):
     def take_action(self):
         if self.fan.is_on():
             self.fan.off(str(self))
 
 
-class FanStartCond(FanCondition):
+class FanStartCondition(FanCondition):
     def take_action(self):
         if not self.fan.is_on():
             self.fan.on(str(self))

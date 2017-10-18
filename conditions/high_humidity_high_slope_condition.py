@@ -1,7 +1,7 @@
-from conditions import FanStartCond
+from conditions import FanStartCondition
 
 
-class HighHumidityAndHighSlopeCondition(FanStartCond):
+class HighHumidityAndHighSlopeCondition(FanStartCondition):
     """
     if humidity >= 80 and slope >= 1:
     """

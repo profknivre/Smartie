@@ -1,7 +1,7 @@
-from conditions import FanStopCond
+from conditions import FanStopCondition
 
 
-class LowHumiditySmallSlopeCondition(FanStopCond):
+class LowHumiditySmallSlopeCondition(FanStopCondition):
     """
     if humidity < 80 and slope > -0.25 and self.fan.on_time() > self.min_on_time()
     """

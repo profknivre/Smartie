@@ -1,7 +1,7 @@
-from conditions import FanStopCond
+from conditions import FanStopCondition
 
 
-class LongRunningTimeCondition(FanStopCond):
+class LongRunningTimeCondition(FanStopCondition):
     """
     if self.fan.on_time() > self.max_on_time():
     """
