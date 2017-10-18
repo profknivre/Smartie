@@ -60,4 +60,9 @@ class TimerMock:
         def __init__(self, caption, val):
             pass
 
-# return a
+
+def isQuietTime(current_time):
+    if current_time.tm_wday in (5, 6):  # weekend
+        if current_time.tm_hour in (list(range(0, 6)) + list(range(23, 24))):
+            return True
+    return False

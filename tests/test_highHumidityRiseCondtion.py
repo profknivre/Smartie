@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from conditions import HighHumidityAndHighSlopeCondition
+from conditions.high_humidity_high_slope_condition import HighHumidityAndHighSlopeCondition
 from measurements import Measurements
 
 mea = Measurements()  # speedup tests
@@ -11,21 +11,21 @@ class TestHighHumidityRiseCondtion(TestCase):
         self.meas.bathroom_humidity = 88
         self.meas.bathroom_humidity_slope = 1
 
-        self.cond()
+        bool(self.cond)
         self.fan.on.assert_called()
 
     def test_handle_notrun1(self):
         self.meas.bathroom_humidity = 78
         self.meas.bathroom_humidity_slope = 1
 
-        self.cond()
+        bool(self.cond)
         self.fan.on.assert_not_called()
 
     def test_handle_notrun2(self):
         self.meas.bathroom_humidity = 88
         self.meas.bathroom_humidity_slope = 0.51
 
-        self.cond()
+        bool(self.cond)
         self.fan.on.assert_not_called()
 
     def setUp(self):

@@ -1,3 +1,5 @@
+import os
+
 from conditions import *
 from fan import TimedFan
 from measurements import Measurements
@@ -13,7 +15,8 @@ class FanController:
         self.fan = fan
         self.measurements = measurements
 
-        conditions = filter(lambda x: 'Condition' in x, modules)
+        conditions = list(filter(lambda x: 'Condition' in x, modules))
+        # print(conditions)
         self.startconds = []
         self.stopconds = []
 
