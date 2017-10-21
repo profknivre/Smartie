@@ -1,8 +1,4 @@
-from contextlib import suppress
-
 import rpyc
-
-from util import timeout
 
 
 class SmartieSlave(rpyc.Service):
@@ -18,25 +14,17 @@ class SmartieSlave(rpyc.Service):
         # (to finalize the service, if needed)
         pass
 
-    def exposed_get_ds18_temp(self, sensor_id):
+    def exposed_get_ds18_temp(self, sensor_id='28-0115916115ff'):
         from measurements.ds18 import Ds18
-        ds = Ds18(sensor_id='28-0115916115ff')
+        ds = Ds18(sensor_id=sensor_id)  # 28-0115916115ff
 
-        retval = None
-        with suppress(Exception):
-            with timeout(seconds=5):
-                retval = ds.read()
-
+        retval = ds.read()
         return retval
 
     def exposed_get_dht_data(self):
         from measurements.dht import Dht
-        dht = Dht(dht_read_params='Adafruit_DHT.DHT22, 19')
-        retval = None
-        with suppress(Exception):
-            with timeout(seconds=5):
-                retval = dht.read()
-
+        dht = Dht(dht_read_params='Adafruit_DHT.DHT22, 4')
+        retval = dht.read()
         return retval
 
 
