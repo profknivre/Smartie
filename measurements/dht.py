@@ -1,6 +1,6 @@
 import logging
 
-from measurements.base_measurement import BaseMeasurement
+from .base_measurement import BaseMeasurement
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

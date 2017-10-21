@@ -11,6 +11,8 @@ from .ds18 import Ds18
 from .coretemp import CoreTemp
 from util import linreg, UberAdapter
 
+import config
+
 
 class MeasurementsInternals2():
     class Sloper:  # UGLY
@@ -34,7 +36,7 @@ class MeasurementsInternals2():
             return self.slope
 
     def __init__(self):
-        dht = Dht()
+        dht = Dht(dht_read_params=config.dht_read_params)
         self.bathroom_temperature = UberAdapter(dht, 1, gauge_caption='mieszkanie.lazienka.temp')
         self.bathroom_humidity = UberAdapter(dht, 0, gauge_caption='mieszkanie.lazienka.humidity')
         self.bathroom_humidity_slope = self.Sloper(self.bathroom_humidity)  # !!! TODO fixme!!!

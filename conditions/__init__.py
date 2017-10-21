@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from inspect import isabstract
 from time import localtime
 
+import config
 from util import isQuietTime
 
 log = logging.getLogger(__name__)
@@ -36,15 +37,15 @@ class FanCondition(ABC):
     def min_on_time():
         current_time = localtime()
         if isQuietTime(current_time):
-            return 5 * 60
-        return 15 * 60
+            return config.fan_runtime_min_quiet
+        return config.fan_runtime_min
 
     @staticmethod
     def max_on_time():
         current_time = localtime()
         if isQuietTime(current_time):
-                return 15 * 60
-        return 60 * 60
+            return config.fan_runtime_max_quiet
+        return config.fan_runtime_max
 
 
 class FanStopCondition(FanCondition):

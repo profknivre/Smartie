@@ -6,6 +6,7 @@ from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 from time import ctime
 
+import config
 from fan import TimedFan
 from fanctrl import FanController
 from gpio import SysfsGPIO
@@ -19,7 +20,7 @@ bf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler = RotatingFileHandler('/tmp/smartie.log', maxBytes=10*1024*1024, backupCount=10)
 handler.setFormatter(bf)
 logging.getLogger().addHandler(handler)
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(config.loglevel)
 
 log = logging.getLogger(__name__)
 try:
@@ -31,7 +32,7 @@ except ModuleNotFoundError:
 # ---decorator hack
 try:
     # in my network 5.8.0.0/16 is not routed outside!!!
-    stats = statsd.StatsClient('5.8.1.1', 8125)
+    stats = config.stats_client
 except NameError:
     stats = TimerMock
 
@@ -40,7 +41,7 @@ except NameError:
 
 class ActualFan(TimedFan):
     def __init__(self):
-        gp = SysfsGPIO(pinnumber=13)
+        gp = SysfsGPIO(**config.fan_gpio_settings)
         if gp.getDDR() == gp.DDR_INPUT:
             gp.setDDR(gp.DDR_OUTPUT)
 

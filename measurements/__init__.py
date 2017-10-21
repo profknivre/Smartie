@@ -1,28 +1,12 @@
 import logging
 from json import dump, load
 
-from util import TimerMock
+import config
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
-try:
-    import Adafruit_DHT
-    import statsd
-except ModuleNotFoundError as e:
-    log.error(e)
-    pass
-
-# ---decorator hack
-try:
-    # in my network 5.8.0.0/16 is not routed outside!!!
-    stats = statsd.StatsClient('5.8.1.1', 8125)
-except NameError:
-    stats = TimerMock
-
-
-# ---/hack
-
+stats = config.stats_client
 
 class Measurements():
     def __init__(self):
