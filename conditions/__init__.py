@@ -1,9 +1,8 @@
 import logging
 from abc import ABC, abstractmethod
+from inspect import isabstract
 from time import localtime
 
-from fan import TimedFan
-from measurements import Measurements
 from util import isQuietTime
 
 log = logging.getLogger(__name__)
@@ -11,7 +10,7 @@ log.addHandler(logging.NullHandler())
 
 
 class FanCondition(ABC):
-    def __init__(self, fan: TimedFan, measurements: Measurements):
+    def __init__(self, fan, measurements):
         self.fan = fan
         self.measurements = measurements
 
@@ -29,6 +28,7 @@ class FanCondition(ABC):
     def handle(self):
         pass
 
+    @abstractmethod
     def take_action(self):
         pass
 
@@ -59,7 +59,10 @@ class FanStartCondition(FanCondition):
             self.fan.on(str(self))
 
 
-from conditions.force_conditions import ForceStartCondition, ForceStopCondition
-from conditions.high_humidity_high_slope_condition import HighHumidityAndHighSlopeCondition
-from conditions.long_running_time_condition import LongRunningTimeCondition
-from conditions.low_humidity_small_slope_condition import LowHumiditySmallSlopeCondition
+def get_condition_list():
+    stop_conds = FanStopCondition.__subclasses__()
+    start_conds = FanStartCondition.__subclasses__()
+
+    condition_classes = stop_conds + start_conds
+    condition_classes = filter(lambda x: not isabstract(x), condition_classes)
+    return condition_classes
