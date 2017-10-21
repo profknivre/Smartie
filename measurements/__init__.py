@@ -3,31 +3,17 @@ import shelve
 from collections import deque
 from json import dump, load
 
+import config
 from measurements.coretemp import CoreTemp
 from measurements.dht import Dht
 from measurements.ds18 import Ds18
 from measurements.online_weather import OnlineWeather
-from util import linreg, TimerMock, UberAdapter
+from util import linreg, UberAdapter
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
-try:
-    import Adafruit_DHT
-    import statsd
-except ModuleNotFoundError as e:
-    log.error(e)
-    pass
-
-# ---decorator hack
-try:
-    # in my network 5.8.0.0/16 is not routed outside!!!
-    stats = statsd.StatsClient('5.8.1.1', 8125)
-except NameError:
-    stats = TimerMock
-
-
-# ---/hack
+stats = config.stats_client
 
 
 class MeasurementsInternals2():
@@ -45,7 +31,7 @@ class MeasurementsInternals2():
 
                 dq.append(current_val)
                 db['hum_hist'] = dq
-                log.debug('adding {} into history'.format(current_val))
+                log.debug('adding {:2.02f} into history'.format(current_val))
 
                 self.slope = linreg(range(len(dq)), dq)[0]
 

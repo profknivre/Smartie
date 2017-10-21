@@ -1,5 +1,7 @@
 import signal
 
+import config
+
 
 def get_slope(data):
     # y = a*x+b
@@ -63,7 +65,7 @@ class TimerMock:
 
 def isQuietTime(current_time):
     if current_time.tm_wday in (5, 6):  # weekend
-        if current_time.tm_hour in (list(range(0, 6)) + list(range(23, 24))):
+        if current_time.tm_hour in (config.weekend_quiet_hours):
             return True
     return False
 

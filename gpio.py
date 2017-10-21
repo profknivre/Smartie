@@ -1,6 +1,8 @@
 import os
 from abc import abstractmethod
 
+import config
+
 
 class GPIOBase:
     DDR_OUTPUT = 1
@@ -100,7 +102,8 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='fiddle with gpio')
-    parser.add_argument('pin', metavar='pinnum', type=int, nargs='?', help='gpio pin number', default=13)
+    parser.add_argument('pin', metavar='pinnum', type=int, nargs='?', help='gpio pin number',
+                        default=config.fan_gpio_settings.get('pinnumber', 13))
     parser.add_argument('val', metavar='val', type=int, nargs='?', help='value', default=None, choices=(0, 1))
     parser.add_argument('--ddr', metavar='direction', type=int, nargs=1, help='data direction register', default=None,
                         choices=(0, 1))

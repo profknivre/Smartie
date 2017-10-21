@@ -5,6 +5,7 @@ from time import time
 
 import requests
 
+import config
 from measurements.base_measurement import BaseMeasurement
 from util import timeout
 
@@ -43,10 +44,11 @@ def getdata():
         # in my network 5.8.0.0/16 is not routed outside
         # this is a caching proxy running very similar code but it has api key embedded
         # log.info('Doing apixu request...')
-        response = requests.get('http://5.8.0.1/cgi-bin/zonk.py')
+        response = requests.get(config.apixu_link)
         # log.info('apixu req done')
         return response.json()
 
+    # <editor-fold desc="example output">
     example_output = {
         'location': {
             'name': 'Wroclaw',
@@ -81,6 +83,7 @@ def getdata():
             'vis_miles': 6.0
         }
     }
+    # </editor-fold>
 
     with shelve.open('/tmp/apixu_last_weather') as db:
         olddata = db.get('olddata', dict())

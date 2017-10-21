@@ -1,5 +1,6 @@
 import shelve
 from datetime import timedelta
+from distutils.command.config import config
 from time import time
 
 from gpio import GPIOBase
@@ -64,7 +65,7 @@ def main():
     parser.add_argument('val', metavar='val', type=int, nargs='?', help='value', default=None, choices=(0, 1))
     args = parser.parse_args()
 
-    gp = SysfsGPIO(pinnumber=13)
+    gp = SysfsGPIO(**config.fan_gpio_settings)
     if gp.getDDR() == gp.DDR_INPUT:
         gp.setDDR(gp.DDR_OUTPUT)
 

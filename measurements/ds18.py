@@ -6,15 +6,10 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class Ds18(BaseMeasurement):
+class BaseDs18:
     def __init__(self, **kwargs):
         self.sensor_id = kwargs.get('sensor_id', '28-0115915119ff')
         self.sensor_path = '/sys/bus/w1/devices/{:s}/w1_slave'.format(self.sensor_id)
-
-        if 'timing_caption' not in kwargs:
-            kwargs['timing_caption'] = 'malina0.measurments_time.ds18read'
-
-        super().__init__(**kwargs)
 
     def read(self):
         try:
@@ -26,3 +21,14 @@ class Ds18(BaseMeasurement):
         except Exception as e:
             log.error(e)
             return 0
+
+
+class Ds18(BaseMeasurement, BaseDs18):
+    def __init__(self, **kwargs):
+        self.sensor_id = kwargs.get('sensor_id', '28-0115915119ff')
+        self.sensor_path = '/sys/bus/w1/devices/{:s}/w1_slave'.format(self.sensor_id)
+
+        if 'timing_caption' not in kwargs:
+            kwargs['timing_caption'] = 'malina0.measurments_time.ds18read'
+
+        super().__init__(**kwargs)
