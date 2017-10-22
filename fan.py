@@ -1,8 +1,8 @@
 import shelve
 from datetime import timedelta
-from distutils.command.config import config
 from time import time
 
+import config
 from gpio import GPIOBase
 from gpio import SysfsGPIO
 
