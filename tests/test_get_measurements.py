@@ -12,3 +12,13 @@ class TestGet_measurements(TestCase):
         _measurements = set(_measurements)
 
         self.assertEqual(_measurements, MEASUREMENTS, 'missing measurements ?')
+
+    def setUp(self):
+        import sys
+        mods = map(str, sys.modules)
+        mods = reversed(list(filter(lambda x: 'measureme' in x, mods)))
+
+        def delete_module(a):
+            del sys.modules[a]
+
+        list(map(delete_module, list(mods)))

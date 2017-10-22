@@ -19,3 +19,13 @@ class TestGet_condition_list(TestCase):
         cnds = set(cnds)
 
         self.assertEqual(cnds, CONDITIONS, 'missing conditions ?')
+
+    def setUp(self):
+        import sys
+        mods = map(str, sys.modules)
+        mods = reversed(list(filter(lambda x: 'Condition' in x, mods)))
+
+        def delete_module(a):
+            del sys.modules[a]
+
+        list(map(delete_module, list(mods)))
