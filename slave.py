@@ -134,8 +134,13 @@ def worker():
 if __name__ == "__main__":
     from rpyc.utils.server import ThreadedServer as RpycServer
 
-    registrar = rpyc.utils.registry.TCPRegistryClient('5.8.0.8')
-    t = RpycServer(SmartieSlave, port=18861, auto_register=True, registrar=registrar)
+    null_logger = logging.getLogger('nullloger')
+    null_logger.setLevel(logging.ERROR)
+    null_logger.handlers.clear()
+    null_logger.addHandler(logging.NullHandler())
+
+    registrar = rpyc.utils.registry.TCPRegistryClient('5.8.0.8', logger=null_logger)
+    t = RpycServer(SmartieSlave, port=18861, auto_register=True, registrar=registrar, logger=null_logger)
     t2 = threading.Thread(target=worker, name='ResourceMonitor', daemon=True)
 
     server = t
