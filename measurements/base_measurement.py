@@ -10,3 +10,4 @@ class BaseMeasurement:
             str(self.__class__.__name__.lower())))
 
         self.gauge_caption = kwargs.get('gauge_caption', str(self.__class__.__name__.lower()))
+        vars(self).update(kwargs)
