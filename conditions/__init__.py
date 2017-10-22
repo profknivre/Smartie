@@ -60,6 +60,11 @@ class FanStartCondition(FanCondition):
             self.fan.on(str(self))
 
 
+from .low_humidity_small_slope_condition import *
+from .long_running_time_condition import *
+from .high_humidity_high_slope_condition import *
+from .force_conditions import *
+
 def get_condition_list():
     stop_conds = FanStopCondition.__subclasses__()
     start_conds = FanStartCondition.__subclasses__()
