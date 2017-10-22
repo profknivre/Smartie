@@ -11,6 +11,7 @@ from util import timeout
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)  # don't care
 
 
 class OnlineWeather(BaseMeasurement):
