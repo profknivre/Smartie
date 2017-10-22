@@ -3,6 +3,7 @@ import threading
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from logging.handlers import RotatingFileHandler
+from time import time
 
 import rpyc
 
@@ -24,6 +25,7 @@ stats = config.stats_client
 
 monitoring = True
 server = None
+store = dict()
 
 
 class BaseCommand(ABC):
@@ -97,7 +99,18 @@ class SmartieSlave(rpyc.Service):
         cmds = BaseCommand.build(service=self)
 
         if name in cmds:
-            return cmds.get(name).exec(**kwargs)
+            lqs = 'last_{:s}_query'.format(name)
+            lqd = 'last_{:s}_retval'.format(name)
+            lastq = store.get(lqs, time())
+
+            if time() - lastq > config.rpyc_cmd_retry_interval:
+                retval = cmds.get(name).exec(**kwargs)
+                store[lqs] = time()
+                store[lqd] = retval
+            else:
+                retval = store[lqd]
+
+            return retval
 
 
 def worker():

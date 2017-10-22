@@ -32,3 +32,5 @@ fan_runtime_min = 15 * 60
 fan_runtime_max = 60 * 60
 
 dht_read_params = 'Adafruit_DHT.DHT22, 19'
+
+rpyc_cmd_retry_interval = 30

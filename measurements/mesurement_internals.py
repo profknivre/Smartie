@@ -2,8 +2,6 @@ import logging
 import shelve
 from collections import deque
 
-import rpyc
-
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
@@ -31,7 +29,7 @@ class MeasurementsInternals2():
 
                 dq.append(current_val)
                 db['hum_hist'] = dq
-                log.debug('adding {} into history'.format(current_val))
+                log.debug('adding {:.02f} into history'.format(current_val))
 
                 self.slope = linreg(range(len(dq)), dq)[0]
 
@@ -51,6 +49,8 @@ class MeasurementsInternals2():
         self.core_temperature = CoreTemp(gauge_caption='malina0.core_temp')
 
         try:
+            import rpyc
+
             registrar = rpyc.utils.registry.TCPRegistryClient('5.8.0.8')
             ret = rpyc.utils.factory.discover('SmartieSlave', registrar=registrar)
 
@@ -65,4 +65,3 @@ class MeasurementsInternals2():
             self.bedroom_humidity = UberAdapter(remote_dht, 0, gauge_caption='mieszkanie.test22.humidity')
         except Exception as e:
             log.error(e)
-            pass
