@@ -110,3 +110,36 @@ class RemoteAdapter:
         cn = self.conn
         retval = cn.root.exposed_cmd(self.adaptee.REMOTE_CMD, **vars(self))
         return retval
+
+
+class ResourceMonitor:
+    def __init__(self, **kwargs):
+        from  threading import Thread
+        vars(self).update(kwargs)
+        self.stats = config.stats_client
+        self.monitoring = config.enable_resource_monitoring
+        self.hosts = config.resource_monitor_hosts
+        self.worker_thread = Thread(target=self.worker, name=kwargs.get('name', 'ResourceMonitor'), daemon=True)
+
+    def start(self):
+        self.worker_thread.start()
+
+    def worker(self):
+        import psutil
+        from platform import node
+        from time import sleep
+
+        hostname = node().replace('.lan', '')
+
+        if hostname in self.hosts:
+            while True:
+                pvm = psutil.virtual_memory()
+                fields = ('used')  # , 'free')
+                nfo = dict(filter(lambda x: x[0] in fields, zip(pvm._asdict(), pvm)))
+
+                for k in nfo.keys():
+                    caption = '{}.memory.{}'.format(hostname, k)
+                    if self.monitoring:
+                        self.stats.gauge(caption, nfo.get(k))
+                        # print(caption, nfo.get(k))
+                sleep(60)

@@ -35,3 +35,5 @@ dht_read_params = 'Adafruit_DHT.DHT22, 19'
 
 rpyc_cmd_retry_interval = 30
 enable_timing = False
+enable_resource_monitoring = True
+resource_monitor_hosts = ('malina0', 'malina2', 'malina3')

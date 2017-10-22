@@ -11,7 +11,7 @@ from fan import TimedFan
 from fanctrl import FanController
 from gpio import SysfsGPIO
 from measurements import Measurements
-from util import TimerMock
+from util import TimerMock, ResourceMonitor
 
 #logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
 #                   filename='/tmp/smartie.log')
@@ -65,6 +65,9 @@ class ActualFan(TimedFan):
 
 def main():
     log.info('sztartin...')
+    rm = ResourceMonitor()
+    rm.start()
+
     with stats.timer('malina0.measurments_time.total'):
         m = Measurements()
 

@@ -1,5 +1,4 @@
 import logging
-import threading
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from logging.handlers import RotatingFileHandler
@@ -8,6 +7,7 @@ from time import time
 import rpyc
 
 import config
+from util import ResourceMonitor
 
 bf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler = RotatingFileHandler('/tmp/smartie.log', maxBytes=10 * 1024 * 1024, backupCount=10)
@@ -17,13 +17,6 @@ logging.getLogger().setLevel(config.loglevel)
 
 log = logging.getLogger(__name__)
 
-
-from time import sleep
-
-# in my network 5.8.0.0/16 is not routed outside!!!
-stats = config.stats_client
-
-monitoring = True
 server = None
 store = dict()
 
@@ -72,6 +65,7 @@ class ReadCoreTemp(BaseCommand):
         from measurements.coretemp import CoreTemp
         return CoreTemp().read()
 
+
 class Disconnect(BaseCommand):
     NAME = 'disconnect'
 
@@ -85,6 +79,7 @@ class KillServer(BaseCommand):
     def exec(self, **kwargs):
         if server is not None:
             server.close()
+
 
 class SmartieSlave(rpyc.Service):
     ALIASES = ['SmartieSlave']
@@ -120,24 +115,6 @@ class SmartieSlave(rpyc.Service):
             return retval
 
 
-def worker():
-    import psutil
-    from platform import node
-
-    hostname = node().replace('.lan', '')
-
-    while True:
-        pvm = psutil.virtual_memory()
-        fields = ('used')  # , 'free')
-        nfo = dict(filter(lambda x: x[0] in fields, zip(pvm._asdict(), pvm)))
-
-        for k in nfo.keys():
-            caption = '{}.memory.{}'.format(hostname, k)
-            if monitoring:
-                stats.gauge(caption, nfo.get(k))
-                # print(caption, nfo.get(k))
-        sleep(60)
-
 if __name__ == "__main__":
     from rpyc.utils.server import ThreadedServer as RpycServer
 
@@ -148,10 +125,10 @@ if __name__ == "__main__":
 
     registrar = rpyc.utils.registry.TCPRegistryClient('5.8.0.8', logger=null_logger)
     t = RpycServer(SmartieSlave, port=18861, auto_register=True, registrar=registrar, logger=null_logger)
-    t2 = threading.Thread(target=worker, name='ResourceMonitor', daemon=True)
+    rm = ResourceMonitor()
 
     server = t
 
     with suppress(KeyboardInterrupt):
-        t2.start()
+        rm.start()
         t.start()
