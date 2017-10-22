@@ -2,16 +2,25 @@ import logging
 import threading
 from abc import ABC, abstractmethod
 from contextlib import suppress
+from logging.handlers import RotatingFileHandler
 
 import rpyc
-import statsd
 
-logging.basicConfig(level=logging.DEBUG)
+import config
+
+bf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler = RotatingFileHandler('/tmp/smartie.log', maxBytes=10 * 1024 * 1024, backupCount=10)
+handler.setFormatter(bf)
+logging.getLogger().addHandler(handler)
+logging.getLogger().setLevel(config.loglevel)
+
+log = logging.getLogger(__name__)
+
 
 from time import sleep
 
 # in my network 5.8.0.0/16 is not routed outside!!!
-stats = statsd.StatsClient('5.8.1.1', 8125)
+stats = config.stats_client
 
 monitoring = True
 server = None
@@ -49,7 +58,7 @@ class ReadDHT(BaseCommand):
 
     def exec(self, **kwargs):
         from measurements.dht import Dht
-        dht = Dht(dht_read_params='Adafruit_DHT.DHT22, 4')
+        dht = Dht(**kwargs)
         retval = dht.read()
         return retval
 
@@ -99,19 +108,20 @@ def worker():
 
     while True:
         pvm = psutil.virtual_memory()
-        nfo = dict(filter(lambda x: x[0] in ('used', 'free'), zip(pvm._asdict(), pvm)))
+        fields = ('used')  # , 'free')
+        nfo = dict(filter(lambda x: x[0] in fields, zip(pvm._asdict(), pvm)))
 
         for k in nfo.keys():
             caption = '{}.memory.{}'.format(hostname, k)
             if monitoring:
                 stats.gauge(caption, nfo.get(k))
-            print(caption, nfo.get(k))
+                # print(caption, nfo.get(k))
         sleep(60)
 
 if __name__ == "__main__":
     from rpyc.utils.server import ThreadedServer as RpycServer
 
-    registrar = rpyc.utils.registry.TCPRegistryClient('44.0.0.171')
+    registrar = rpyc.utils.registry.TCPRegistryClient('5.8.0.8')
     t = RpycServer(SmartieSlave, port=18861, auto_register=True, registrar=registrar)
     t2 = threading.Thread(target=worker, name='ResourceMonitor', daemon=True)
 
