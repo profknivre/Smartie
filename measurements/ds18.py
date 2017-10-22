@@ -7,6 +7,7 @@ log.addHandler(logging.NullHandler())
 
 
 class BaseDs18:
+    REMOTE_CMD = 'read_ds18'
     def __init__(self, **kwargs):
         self.sensor_id = kwargs.get('sensor_id', '28-0115915119ff')
         self.sensor_path = '/sys/bus/w1/devices/{:s}/w1_slave'.format(self.sensor_id)
@@ -33,9 +34,3 @@ class Ds18(BaseMeasurement, BaseDs18):
 
         super().__init__(**kwargs)
 
-
-class RemoteDs(Ds18):
-    def read(self):
-        cn = self.conn
-        retval = cn.root.exposed_cmd('read_ds18', **vars(self))
-        return retval

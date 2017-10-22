@@ -10,6 +10,7 @@ last_read = 0, 0
 
 
 class Dht(BaseMeasurement):
+    REMOTE_CMD = 'read_dht'
     def __init__(self, **kwargs):
         if 'timing_caption' not in kwargs:
             kwargs['timing_caption'] = 'malina0.measurments_time.dhtread'
@@ -26,9 +27,3 @@ class Dht(BaseMeasurement):
 
         return humidity, temperature
 
-
-class RemoteDht(Dht):
-    def read(self):
-        cn = self.conn
-        retval = cn.root.exposed_cmd('read_dht', **vars(self))
-        return retval

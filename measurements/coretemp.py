@@ -8,6 +8,7 @@ log.addHandler(logging.NullHandler())
 
 
 class CoreTemp(BaseMeasurement):
+    REMOTE_CMD = 'read_coretemp'
     def read(self):
         try:
             return float(
@@ -17,9 +18,3 @@ class CoreTemp(BaseMeasurement):
             log.error(e)
             return 0
 
-
-class RemoteCoreTemp(CoreTemp):
-    def read(self):
-        cn = self.conn
-        retval = cn.root.exposed_cmd('read_coretemp', **vars(self))
-        return retval

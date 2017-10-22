@@ -55,6 +55,7 @@ class TimerMock:
 
         def __exit__(self, type, value, traceback):
             return
+
         def a(arg):
             pass
 
@@ -80,8 +81,17 @@ class UberAdapter:
     def __init__(self, adaptee, index, **kwargs):
         self.adaptee = adaptee
         self.index = index
-        self.timing_caption = kwargs.get('timing_caption', adaptee.timing_caption)
-        self.gauge_caption = kwargs.get('gauge_caption', adaptee.gauge_caption)
+
+        if 'timing_caption' in kwargs:
+            self.timing_caption = kwargs.get('timing_caption')
+        elif hasattr(adaptee, 'timing_caption'):
+            self.timing_caption = adaptee.timing_caption
+
+        if 'gauge_caption' in kwargs:
+            self.gauge_caption = kwargs.get('gauge_caption')
+        elif hasattr(adaptee, 'gauge_caption'):
+            self.gauge_caption = adaptee.gauge_caption
+
         UberAdapter.retval[id(self.adaptee)] = None
         super().__init__()
 
@@ -89,3 +99,14 @@ class UberAdapter:
         if UberAdapter.retval[id(self.adaptee)] is None:
             UberAdapter.retval[id(self.adaptee)] = self.adaptee.read()
         return UberAdapter.retval[id(self.adaptee)][self.index]
+
+
+class RemoteAdapter:
+    def __init__(self, adaptee, **kwargs):
+        vars(self).update(kwargs)
+        self.adaptee = adaptee
+
+    def read(self):
+        cn = self.conn
+        retval = cn.root.exposed_cmd(self.adaptee.REMOTE_CMD, **vars(self))
+        return retval

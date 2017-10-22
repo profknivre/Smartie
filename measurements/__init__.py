@@ -18,7 +18,7 @@ class Measurements():
         gaged = set()
 
         for k, v in (filter(lambda x: not x[0].startswith('_'), vars(m).items())):
-            if hasattr(v, 'timing_caption') and v.timing_caption not in timed:
+            if hasattr(v, 'timing_caption') and v.timing_caption not in timed and config.enable_timing:
                 with stats.timer(v.timing_caption):
                     # log.debug('timing: {}'.format(v.timing_caption))
                     value = v.read()

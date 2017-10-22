@@ -5,11 +5,11 @@ from collections import deque
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
-from .dht import Dht, RemoteDht
+from .dht import Dht
 from .online_weather import OnlineWeather
-from .ds18 import Ds18, RemoteDs
-from .coretemp import CoreTemp, RemoteCoreTemp
-from util import linreg, UberAdapter
+from .ds18 import Ds18
+from .coretemp import CoreTemp
+from util import linreg, UberAdapter, RemoteAdapter
 
 import config
 
@@ -55,18 +55,18 @@ class MeasurementsInternals2():
             ret = rpyc.utils.factory.discover('SmartieSlave', registrar=registrar)
 
             conn = rpyc.connect(*ret[0])
-            self.radiator_temperature = RemoteDs(gauge_caption='mieszkanie.kaloryfer.temp',
-                                                 sensor_id='28-0115916115ff', conn=conn)
+            self.radiator_temperature = RemoteAdapter(Ds18, gauge_caption='mieszkanie.kaloryfer.temp',
+                                                      sensor_id='28-0115916115ff', conn=conn)
 
-            remote_dht = RemoteDht(dht_read_params='Adafruit_DHT.DHT22, 4', conn=conn,
-                                   timing_caption='malina2.measurments_time.dht22read')
+            remote_dht = RemoteAdapter(Dht, dht_read_params='Adafruit_DHT.DHT22, 4', conn=conn,
+                                       timing_caption='malina2.measurments_time.dht22read')
 
             self.bedroom_temperature = UberAdapter(remote_dht, 1, gauge_caption='mieszkanie.test22.temp')
             self.bedroom_humidity = UberAdapter(remote_dht, 0, gauge_caption='mieszkanie.test22.humidity')
 
-            self.malina2_core_temperature = RemoteCoreTemp(gauge_caption='malina2.core_temp',
-                                                           timing_caption='malina2.measurments_time.coretemp',
-                                                           conn=conn)
+            self.malina2_core_temperature = RemoteAdapter(CoreTemp, gauge_caption='malina2.core_temp',
+                                                          timing_caption='malina2.measurments_time.coretemp',
+                                                          conn=conn)
 
         except Exception as e:
-            log.error(e)
+            log.exception(e)
