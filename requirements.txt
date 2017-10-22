@@ -1,0 +1,4 @@
+statsd
+psutil>=5.3.0
+requests
+rpyc>=3.4.4
