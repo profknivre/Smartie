@@ -101,7 +101,7 @@ class SmartieSlave(rpyc.Service):
         if name in cmds:
             lqs = 'last_{:s}_query'.format(name)
             lqd = 'last_{:s}_retval'.format(name)
-            lastq = store.get(lqs, time())
+            lastq = store.get(lqs, 0)
 
             if time() - lastq > config.rpyc_cmd_retry_interval:
                 retval = cmds.get(name).exec(**kwargs)
