@@ -32,3 +32,10 @@ class Ds18(BaseMeasurement, BaseDs18):
             kwargs['timing_caption'] = 'malina0.measurments_time.ds18read'
 
         super().__init__(**kwargs)
+
+
+class RemoteDs(Ds18):
+    def read(self):
+        cn = self.conn
+        retval = cn.root.exposed_cmd('read_ds18', **vars(self))
+        return retval

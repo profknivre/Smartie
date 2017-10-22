@@ -25,3 +25,10 @@ class Dht(BaseMeasurement):
             log.error(e)
 
         return humidity, temperature
+
+
+class RemoteDht(Dht):
+    def read(self):
+        cn = self.conn
+        retval = cn.root.exposed_cmd('read_dht', **vars(self))
+        return retval

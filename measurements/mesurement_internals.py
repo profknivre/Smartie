@@ -2,12 +2,14 @@ import logging
 import shelve
 from collections import deque
 
+import rpyc
+
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
-from .dht import Dht
+from .dht import Dht, RemoteDht
 from .online_weather import OnlineWeather
-from .ds18 import Ds18
+from .ds18 import Ds18, RemoteDs
 from .coretemp import CoreTemp
 from util import linreg, UberAdapter
 
@@ -47,3 +49,20 @@ class MeasurementsInternals2():
 
         self.saloon_temperature = Ds18(sensor_id='28-0115915119ff', gauge_caption='mieszkanie.temp1')
         self.core_temperature = CoreTemp(gauge_caption='malina0.core_temp')
+
+        try:
+            registrar = rpyc.utils.registry.TCPRegistryClient('5.8.0.8')
+            ret = rpyc.utils.factory.discover('SmartieSlave', registrar=registrar)
+
+            conn = rpyc.connect(*ret[0])
+            self.radiator_temperature = RemoteDs(gauge_caption='mieszkanie.kaloryfer.temp',
+                                                 sensor_id='28-0115916115ff', conn=conn)
+
+            remote_dht = RemoteDht(dht_read_params='Adafruit_DHT.DHT22, 4', conn=conn,
+                                   timing_caption='malina2.measurments_time.dht22read')
+
+            self.bedroom_temperature = UberAdapter(remote_dht, 1, gauge_caption='mieszkanie.test22.temp')
+            self.bedroom_humidity = UberAdapter(remote_dht, 0, gauge_caption='mieszkanie.test22.humidity')
+        except Exception as e:
+            log.error(e)
+            pass
