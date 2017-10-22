@@ -65,6 +65,13 @@ class ReadDHT(BaseCommand):
         return retval
 
 
+class ReadCoreTemp(BaseCommand):
+    NAME = 'read_coretemp'
+
+    def exec(self, **kwargs):
+        from measurements.coretemp import CoreTemp
+        return CoreTemp().read()
+
 class Disconnect(BaseCommand):
     NAME = 'disconnect'
 

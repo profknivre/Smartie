@@ -16,3 +16,10 @@ class CoreTemp(BaseMeasurement):
         except Exception as e:
             log.error(e)
             return 0
+
+
+class RemoteCoreTemp(CoreTemp):
+    def read(self):
+        cn = self.conn
+        retval = cn.root.exposed_cmd('read_coretemp', **vars(self))
+        return retval

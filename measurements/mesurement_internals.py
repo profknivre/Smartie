@@ -8,7 +8,7 @@ log.addHandler(logging.NullHandler())
 from .dht import Dht, RemoteDht
 from .online_weather import OnlineWeather
 from .ds18 import Ds18, RemoteDs
-from .coretemp import CoreTemp
+from .coretemp import CoreTemp, RemoteCoreTemp
 from util import linreg, UberAdapter
 
 import config
@@ -63,5 +63,10 @@ class MeasurementsInternals2():
 
             self.bedroom_temperature = UberAdapter(remote_dht, 1, gauge_caption='mieszkanie.test22.temp')
             self.bedroom_humidity = UberAdapter(remote_dht, 0, gauge_caption='mieszkanie.test22.humidity')
+
+            self.malina2_core_temperature = RemoteCoreTemp(gauge_caption='malina2.core_temp',
+                                                           timing_caption='malina2.measurments_time.coretemp',
+                                                           conn=conn)
+
         except Exception as e:
             log.error(e)
