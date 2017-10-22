@@ -23,7 +23,7 @@ store = dict()
 
 class BaseCommand(ABC):
     def __init__(self, **kwargs):
-        self.service = kwargs.get('service')
+        vars(self).update(kwargs)
         super().__init__()
 
     @abstractmethod
@@ -33,38 +33,25 @@ class BaseCommand(ABC):
     @staticmethod
     def build(**kwargs):
         ret = {}
-        for cls in BaseCommand.__subclasses__():
+        from measurements.factory import get_measurements
+        _measurements = get_measurements()
+        _measurements = filter(lambda x: hasattr(x, 'REMOTE_CMD'), _measurements)
+
+        for cls in _measurements:
+            ret[cls.REMOTE_CMD] = MeasurementCommand(cls=cls, **kwargs)
+
+        _commands = BaseCommand.__subclasses__()
+        _commands = filter(lambda x: hasattr(x, 'NAME'), _commands)
+        for cls in _commands:
             ret[cls.NAME] = cls(**kwargs)
+
         return ret
 
 
-class ReadDs18(BaseCommand):
-    NAME = 'read_ds18'
-
+class MeasurementCommand(BaseCommand):
     def exec(self, **kwargs):
-        from measurements.ds18 import Ds18
-        ds = Ds18(**kwargs)  # 28-0115916115ff
-        retval = ds.read()
-        return retval
-
-
-class ReadDHT(BaseCommand):
-    NAME = 'read_dht'
-
-    def exec(self, **kwargs):
-        from measurements.dht import Dht
-        dht = Dht(**kwargs)
-        retval = dht.read()
-        return retval
-
-
-class ReadCoreTemp(BaseCommand):
-    NAME = 'read_coretemp'
-
-    def exec(self, **kwargs):
-        from measurements.coretemp import CoreTemp
-        return CoreTemp().read()
-
+        obj = self.cls(**kwargs)
+        return obj.read()
 
 class Disconnect(BaseCommand):
     NAME = 'disconnect'
