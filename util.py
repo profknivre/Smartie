@@ -1,3 +1,5 @@
+import lzma
+import os
 import signal
 
 import config
@@ -143,3 +145,19 @@ class ResourceMonitor:
                         self.stats.gauge(caption, nfo.get(k))
                         # print(caption, nfo.get(k))
                 sleep(60)
+
+
+def XZRotator(source, dest):
+    """
+    Move and xz rotator
+    """
+    f_in = open(source, 'rb')
+    f_out = lzma.open(dest, 'wb')
+    f_out.writelines(f_in)
+    f_out.close()
+    f_in.close()
+    os.remove(source)
+
+
+def XZNamer(default_name):
+    return default_name+'.xz'

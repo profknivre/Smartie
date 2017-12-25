@@ -13,6 +13,8 @@ try:
     stats_client = statsd.StatsClient('5.8.1.1', 8125)
 except ModuleNotFoundError:  # not on raspi, skip statsd
     stats_client = TimerMock
+except:
+    stats_client = None
 
 # see pi_zero_pinout.txt
 fan_gpio_settings = {'pinnumber': 13}
@@ -25,8 +27,8 @@ apixu_link = 'http://5.8.0.1/cgi-bin/zonk.py'
 # minimise fan running time between 23:00 and 05:00
 weekend_quiet_hours = list(range(0, 6)) + list(range(23, 24))
 
-fan_runtime_min_quiet = 5 * 60
-fan_runtime_max_quiet = 15 * 60
+fan_runtime_min_quiet = 10 * 60
+fan_runtime_max_quiet = 30 * 60
 
 fan_runtime_min = 15 * 60
 fan_runtime_max = 60 * 60

@@ -11,14 +11,16 @@ from fan import TimedFan
 from fanctrl import FanController
 from gpio import SysfsGPIO
 from measurements import Measurements
-from util import TimerMock, ResourceMonitor
+from util import TimerMock, ResourceMonitor, XZRotator, XZNamer
 
 #logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
 #                   filename='/tmp/smartie.log')
 
 bf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler = RotatingFileHandler('/tmp/smartie.log', maxBytes=10*1024*1024, backupCount=10)
+handler = RotatingFileHandler('/tmp/smartie.log', maxBytes=10*1024*1024, backupCount=100)
 handler.setFormatter(bf)
+handler.rotator = XZRotator
+handler.namer = XZNamer
 logging.getLogger().addHandler(handler)
 logging.getLogger().setLevel(config.loglevel)
 
