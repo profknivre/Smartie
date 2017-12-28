@@ -1,6 +1,6 @@
 import shelve
 from datetime import timedelta
-from time import time
+from time import time, ctime
 
 import config
 from gpio import GPIOBase
@@ -78,7 +78,7 @@ def main():
         if ison:
             print('Fan on for: {}'.format(timedelta(seconds=int(fan.on_time()))))
         else:
-            print('Fan is off')
+            print('Fan is off since {}'.format(ctime(fan.db.get('when_off', 0))))
 
     if (args.val == 1):  # start
         fan.on('manual_ovveride')

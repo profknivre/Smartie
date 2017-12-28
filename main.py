@@ -4,20 +4,18 @@ import logging
 import shelve
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
-from time import ctime
+from time import time
 
 import config
 from fan import TimedFan
 from fanctrl import FanController
 from gpio import SysfsGPIO
 from measurements import Measurements
+from measurements.historian import engrave, extract_run
 from util import TimerMock, ResourceMonitor, XZRotator, XZNamer, FileMutex
 
-#logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
-#                   filename='/tmp/smartie.log')
-
 bf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler = RotatingFileHandler('/tmp/smartie.log', maxBytes=10*1024*1024, backupCount=100)
+handler = RotatingFileHandler('/tmp/smartie.log', maxBytes=5 * 1024 * 1024, backupCount=100)
 handler.setFormatter(bf)
 handler.rotator = XZRotator
 handler.namer = XZNamer
@@ -51,14 +49,18 @@ class ActualFan(TimedFan):
         super().__init__(gp, self.database_)
 
     def on(self, who=None):
-        log.debug('Enabled by {} @ {}'.format(
-                who, ctime()))
+        log.debug('Enabled by {}'.format(
+            who))
         return super().on(who)
 
     def off(self, who=None):
-        log.debug('Disabled by {} @ {}'.format(who, ctime()))
-        log.debug('{} fan was ruining for: {}({:.0f}s)'.format(
-                ctime(), timedelta(seconds=self.on_time()), self.on_time()))
+        log.debug('Disabled by {}'.format(who))
+        log.debug('fan was ruining for: {}({:.0f}s)'.format(
+            timedelta(seconds=self.on_time()), self.on_time()))
+
+        ot = 10 + self.on_time() // 60
+        extract_run(minutes=ot)
+
         return TimedFan.off(self, who)
 
     def __del__(self):
@@ -76,13 +78,16 @@ def main():
         fan = ActualFan()
         fc = FanController(fan, m)
         fc.do_stuff()
-
         stats.gauge('mieszkanie.lazienka.wentylator', int(fan.is_on()))
 
-        # TODO pretty print this shite
-        log.info(str(m))
-
+        m.fan_state = int(fan.is_on())
+        # m.timestamp = str(datetime.now().strftime('%Y%m%d%H%M'))  # redundant
+        m.unix_timestamp = time()
+        engrave(m, 60 * 24 * 7)  # keep one week of historical data
 
 if __name__ == '__main__':
     with FileMutex():   # log rotation/compression is _really_ _slow_ on RPi Zero
-        main()
+        try:
+            main()
+        except Exception as e:
+            log.exception(e)
