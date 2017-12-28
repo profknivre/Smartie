@@ -39,6 +39,4 @@ class TestFileMutex(TestCase):
     def tearDown(self):
         with suppress(FileNotFoundError):
             os.unlink(fname)
-
-
-super().tearDown()
+        super().tearDown()

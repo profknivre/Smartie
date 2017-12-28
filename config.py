@@ -1,6 +1,9 @@
 import logging
 
-import statsd
+try:
+    import statsd
+except:
+    pass
 
 from util import TimerMock
 

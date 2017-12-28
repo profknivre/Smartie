@@ -14,7 +14,7 @@ from measurements import Measurements
 from measurements.historian import engrave, extract_run
 from util import TimerMock, ResourceMonitor, XZRotator, XZNamer, FileMutex
 
-#logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
+# logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
 #                   filename='/tmp/smartie.log')
 
 bf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -94,4 +94,3 @@ if __name__ == '__main__':
             main()
         except Exception as e:
             log.exception(e)
-
