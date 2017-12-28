@@ -11,7 +11,7 @@ from fan import TimedFan
 from fanctrl import FanController
 from gpio import SysfsGPIO
 from measurements import Measurements
-from util import TimerMock, ResourceMonitor, XZRotator, XZNamer
+from util import TimerMock, ResourceMonitor, XZRotator, XZNamer, FileMutex
 
 #logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
 #                   filename='/tmp/smartie.log')
@@ -84,4 +84,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    with FileMutex():   # log rotation/compression is _really_ _slow_ on RPi Zero
+        main()

@@ -47,6 +47,23 @@ class timeout:
         signal.alarm(0)
 
 
+class FileMutex:
+    def __init__(self, fname = '/tmp/smartie.mutex'):
+        self.fname = fname
+        self.f = None
+
+    def __enter__(self):
+        # if os.path.exists(self.fname):
+        #     raise Exception('already running')
+        self.f = open(self.fname,mode='x')
+        self.f.write(str(os.getpid()))
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.f: self.f.close()
+        if os.path.exists(self.fname):
+            os.unlink(self.fname)
+
+
 class TimerMock:
     class timer:
         def __init__(self, caption):
