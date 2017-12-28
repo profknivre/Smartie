@@ -14,6 +14,9 @@ from measurements import Measurements
 from measurements.historian import engrave, extract_run
 from util import TimerMock, ResourceMonitor, XZRotator, XZNamer, FileMutex
 
+#logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
+#                   filename='/tmp/smartie.log')
+
 bf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler = RotatingFileHandler('/tmp/smartie.log', maxBytes=5 * 1024 * 1024, backupCount=100)
 handler.setFormatter(bf)
@@ -91,3 +94,4 @@ if __name__ == '__main__':
             main()
         except Exception as e:
             log.exception(e)
+
