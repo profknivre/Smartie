@@ -4,7 +4,9 @@ from unittest.mock import MagicMock
 from conditions.high_humidity_high_slope_condition import HighHumidityAndHighSlopeCondition
 from measurements import Measurements
 
-mea = Measurements()  # speedup tests
+from tests import MeasurementMock
+
+mea = MeasurementMock()  # speedup tests
 
 class TestHighHumidityRiseCondtion(TestCase):
     def test_handle_run(self):

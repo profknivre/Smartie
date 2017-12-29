@@ -27,11 +27,11 @@ class FanCondition(ABC):
 
     @abstractmethod
     def handle(self):
-        pass
+        pass # pragma: nocover
 
     @abstractmethod
     def take_action(self):
-        pass
+        pass # pragma: nocover
 
     @staticmethod
     def min_on_time():

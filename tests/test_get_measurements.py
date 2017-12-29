@@ -19,6 +19,6 @@ class TestGet_measurements(TestCase):
         mods = reversed(list(filter(lambda x: 'measureme' in x, mods)))
 
         def delete_module(a):
-            del sys.modules[a]
+            del sys.modules[a] # pragma: nocover
 
         list(map(delete_module, list(mods)))

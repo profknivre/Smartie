@@ -1,10 +1,14 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 
+
+
 from conditions.low_humidity_small_slope_condition import LowHumiditySmallSlopeCondition
 from measurements import Measurements
 
-mea = Measurements()  # speedup tests
+from tests import MeasurementMock
+
+mea = MeasurementMock()  # speedup tests
 
 class TestLowHumiditySmallSlope(TestCase):
     def test_handle_nostop(self):

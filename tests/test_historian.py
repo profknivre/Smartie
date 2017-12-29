@@ -8,7 +8,6 @@ from measurements.historian import engrave, extract_run, RUNDIRNAME
 
 cnt = 0
 
-
 class Testee:
     def __init__(self):
         global cnt
@@ -21,7 +20,7 @@ class Testee:
 
 class TestExtract_run(TestCase):
     def setUp(self):
-        for i in range(100):
+        for i in range(10):
             engrave(Testee(), 1000)
         super().setUp()
 
@@ -31,10 +30,10 @@ class TestExtract_run(TestCase):
         super().tearDown()
 
     def test_basic(self):
-        extract_run(50)
+        extract_run(5)
 
     def test_count(self):
-        MINUTES = 42
+        MINUTES = 4
         extract_run(MINUTES)
         p = Path(RUNDIRNAME)
         p = list(p.glob('run_*.json'))[0]

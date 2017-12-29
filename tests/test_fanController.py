@@ -7,7 +7,9 @@ from measurements import Measurements
 
 # TODO: make it more reasonable!!!
 
-mea = Measurements()  # speedup tests
+from tests import MeasurementMock
+
+mea = MeasurementMock()  # speedup tests
 
 class TestFanController(TestCase):
     def test_turn_on(self):
