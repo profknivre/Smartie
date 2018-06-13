@@ -1,0 +1,14 @@
+[Unit]
+Description=smartie slave service
+After=disco.service
+
+[Service]
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/usr/bin/python /root/smartie_cron.py
+Type=notify
+RestartSec=10
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
