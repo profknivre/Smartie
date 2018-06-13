@@ -73,7 +73,8 @@ def main():
     rm.start()
 
     with stats.timer('malina0.measurments_time.total'):
-        m = Measurements()
+        with stats.timer('malina0.measurments_time.measurements'):
+            m = Measurements()
 
         fan = ActualFan()
         fc = FanController(fan, m)
@@ -83,7 +84,8 @@ def main():
         m.fan_state = int(fan.is_on())
         # m.timestamp = str(datetime.now().strftime('%Y%m%d%H%M'))  # redundant
         m.unix_timestamp = time()
-        engrave(m, 60 * 24 * 7)  # keep one week of historical data
+        with stats.timer('malina0.measurments_time.engrave'):
+            engrave(m, 60 * 24 * 7)  # keep one week of historical data
 
 if __name__ == '__main__':
     with FileMutex():   # log rotation/compression is _really_ _slow_ on RPi Zero

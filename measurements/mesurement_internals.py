@@ -52,12 +52,16 @@ class MeasurementsInternals2():
 
         try:
             with timeout(5):
-                import rpyc
-    
-                registrar = rpyc.utils.registry.TCPRegistryClient('5.8.0.8')
-                ret = rpyc.utils.factory.discover('SmartieSlave', registrar=registrar)
-    
-                conn = rpyc.connect(*ret[0])
+                # import rpyc
+                # registrar = rpyc.utils.registry.TCPRegistryClient('5.8.0.8')
+                # ret = rpyc.utils.factory.discover('SmartieSlave', registrar=registrar)
+                # conn = rpyc.connect(*ret[0])
+
+                from disco import DiscoProxy2
+                dp2=DiscoProxy2()
+
+                conn = dp2.SmartieSlave
+
                 self.radiator_temperature = RemoteAdapter(Ds18, gauge_caption='mieszkanie.kaloryfer.temp',
                                                           sensor_id='28-0115916115ff', conn=conn)
     

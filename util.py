@@ -1,8 +1,14 @@
+import contextlib
+import time
+import logging
 import lzma
 import os
 import signal
 
 import config
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def get_slope(data):
@@ -127,7 +133,7 @@ class RemoteAdapter:
 
     def read(self):
         cn = self.conn
-        retval = cn.root.exposed_cmd(self.adaptee.REMOTE_CMD, **vars(self))
+        retval = cn.exposed_cmd(self.adaptee.REMOTE_CMD, repr(vars(self)))
         return retval
 
 
@@ -178,3 +184,30 @@ def XZRotator(source, dest):
 
 def XZNamer(default_name):
     return default_name+'.xz'
+
+
+class Stats:
+    @staticmethod
+    @contextlib.contextmanager
+    def timer(subname: str):
+        """Returns a context manager to time execution of a block of code.
+
+        >>> with stats.timer('context_timer'):
+        ...     # resulting timer name: context_timer
+        ...     pass
+        """
+
+        _start = _last = time.time()
+        # enter
+        yield
+        # exit
+        _stop = time.time()
+
+        delta = _stop - _start
+
+        log.info(f'{subname} delta {delta}')
+        # b exit
+
+    @staticmethod
+    def gauge(caption, val):
+        log.info(f'{caption}:{val}')

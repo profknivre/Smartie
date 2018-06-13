@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from contextlib import suppress
 from logging.handlers import RotatingFileHandler
 from time import time
-
-import rpyc
+from xmlrpc.server import DocXMLRPCServer
+import os
 
 import config
 from util import ResourceMonitor
@@ -68,23 +68,12 @@ class KillServer(BaseCommand):
             server.close()
 
 
-class SmartieSlave(rpyc.Service):
-    ALIASES = ['SmartieSlave']
-
-    def on_connect(self):
-        # code that runs when a connection is created
-        # (to init the serivce, if needed)
-        pass
-
-    def on_disconnect(self):
-        # code that runs when the connection has already closed
-        # (to finalize the service, if needed)
-        pass
-
+class SmartieSlave:
     def exposed_tst(self):
         Disconnect(service=self).exec()
 
-    def exposed_cmd(self, name, **kwargs):
+    def exposed_cmd(self, name, kwargs_s):
+        kwargs = eval(kwargs_s)
         cmds = BaseCommand.build(service=self)
 
         if name in cmds:
@@ -103,19 +92,16 @@ class SmartieSlave(rpyc.Service):
 
 
 if __name__ == "__main__":
-    from rpyc.utils.server import ThreadedServer as RpycServer
-
-    null_logger = logging.getLogger('nullloger')
-    null_logger.setLevel(logging.ERROR)
-    null_logger.handlers.clear()
-    null_logger.addHandler(logging.NullHandler())
-
-    registrar = rpyc.utils.registry.TCPRegistryClient('5.8.0.8', logger=null_logger)
-    t = RpycServer(SmartieSlave, port=18861, auto_register=True, registrar=registrar, logger=null_logger)
     rm = ResourceMonitor()
+    rm.start()
 
-    server = t
+    with DocXMLRPCServer(('', 8001)) as server_:
+        from disco import DiscoClient
+        from apparatus import get_my_ip
 
-    with suppress(KeyboardInterrupt):
-        rm.start()
-        t.start()
+        dc = DiscoClient()
+        dc.announce('SmartieSlave','http://{:s}:{:d}'.format(get_my_ip(),8001))
+
+        server_.register_instance(SmartieSlave())
+        os.system('systemd-notify --ready')
+        server_.serve_forever()
