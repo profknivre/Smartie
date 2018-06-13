@@ -73,6 +73,7 @@ class SmartieSlave:
         Disconnect(service=self).exec()
 
     def exposed_cmd(self, name, kwargs_s):
+        log.debug('exposed_cmd: %s (%s)',name,kwargs_s)
         kwargs = eval(kwargs_s)
         cmds = BaseCommand.build(service=self)
 

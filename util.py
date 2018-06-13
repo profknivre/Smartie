@@ -133,7 +133,9 @@ class RemoteAdapter:
 
     def read(self):
         cn = self.conn
-        retval = cn.exposed_cmd(self.adaptee.REMOTE_CMD, repr(vars(self)))
+        dct = dict(filter(lambda x: not x[0] == 'conn', vars(self).items()))
+        retval = cn.exposed_cmd(self.adaptee.REMOTE_CMD, repr(dct))
+
         return retval
 
 
