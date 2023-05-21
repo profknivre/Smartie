@@ -13,11 +13,14 @@ loglevel = logging.DEBUG
 try:
     import Adafruit_DHT
 
-    stats_client = statsd.StatsClient('5.8.1.1', 8125)
+#    stats_client = statsd.StatsClient('5.8.1.1', 8125)
 except ModuleNotFoundError:  # not on raspi, skip statsd
     stats_client = TimerMock
 except:
     stats_client = None
+
+
+stats_client = TimerMock
 
 # see pi_zero_pinout.txt
 fan_gpio_settings = {'pinnumber': 13}
