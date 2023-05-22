@@ -44,7 +44,7 @@ class TasmotaFan():
             return False
 
 class TimedFan(TasmotaFan):
-    def __init__(self, gpio_pin=GPIOBase(),database=dict(),addr=None):
+    def __init__(self, gpio_pin=GPIOBase(),database=dict(),addr='wentylator.lazienka.lan'):
         # super().__init__(gpio_pin)
         self.db = database
         self.addr=addr

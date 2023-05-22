@@ -46,7 +46,7 @@ class ActualFan(TimedFan):
         #     gp.setDDR(gp.DDR_OUTPUT)
 
         self.database_ = shelve.open('/tmp/fan_data')
-        super().__init__(gp, self.database_)
+        super().__init__(gp, self.database_, addr='wentylator.lazienka.lan')
 
     def on(self, who=None):
         log.debug('Enabled by {}'.format(
