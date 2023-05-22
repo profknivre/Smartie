@@ -41,9 +41,9 @@ except NameError:
 
 class ActualFan(TimedFan):
     def __init__(self):
-        gp = SysfsGPIO(**config.fan_gpio_settings)
-        if gp.getDDR() == gp.DDR_INPUT:
-            gp.setDDR(gp.DDR_OUTPUT)
+        gp = None #SysfsGPIO(**config.fan_gpio_settings)
+        # if gp.getDDR() == gp.DDR_INPUT:
+        #     gp.setDDR(gp.DDR_OUTPUT)
 
         self.database_ = shelve.open('/tmp/fan_data')
         super().__init__(gp, self.database_)
