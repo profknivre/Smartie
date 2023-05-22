@@ -8,7 +8,7 @@ log.addHandler(logging.NullHandler())
 from .dht import Dht
 from .online_weather import OnlineWeather
 from .ds18 import Ds18
-from .coretemp import CoreTemp
+# from .coretemp import CoreTemp
 from .bmp280 import Bmp280
 import config
 

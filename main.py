@@ -69,8 +69,8 @@ class ActualFan(TimedFan):
 
 def main():
     log.info('sztartin...')
-    rm = ResourceMonitor()
-    rm.start()
+    # rm = ResourceMonitor()
+    # rm.start()
 
     with stats.timer('malina0.measurments_time.total'):
         with stats.timer('malina0.measurments_time.measurements'):
